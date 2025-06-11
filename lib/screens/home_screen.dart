@@ -9,8 +9,6 @@ import 'dart:convert';
 import 'dart:io';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
-import '../widgets/animated_card.dart';
-import '../widgets/page_transition.dart';
 import 'add_card_screen.dart';
 import 'card_details_screen.dart';
 import 'settings_screen.dart';
@@ -64,9 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  PageTransition(
-                    page: const SettingsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
                 );
               },
             ),
@@ -76,9 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 							onTap: () {
 								Navigator.push(
 									context,
-									PageTransition(
-										page: const ImportExportScreen(),
-									),
+									MaterialPageRoute(builder: (context) => const ImportExportScreen()),
 								);
 							},
 						),
@@ -198,15 +192,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         final cardColor = card.colorValue != null
                             ? Color(card.colorValue!)
                             : _getRandomCardColor(card.name);
-                        return AnimatedCard(
-                          card: card,
-                          cardColor: cardColor,
+                        return GestureDetector(
                           onTap: () async {
                             await ref.read(fidelityCardsProvider.notifier).incrementOpenCount(card.id);
                             Navigator.push(
                               context,
-                              PageTransition(
-                                page: CardDetailsScreen(card: card),
+                              MaterialPageRoute(
+                                builder: (context) => CardDetailsScreen(card: card),
                               ),
                             );
                           },
@@ -222,6 +214,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
                             }
                           },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: cardColor.withOpacity(0.25),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  left: 16,
+                                  top: 12,
+                                  child: Opacity(
+                                    opacity: 0.08,
+                                    child: Text(
+                                      card.name.isNotEmpty ? card.name[0].toUpperCase() : '?',
+                                      style: const TextStyle(
+                                        fontSize: 120,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: -8,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (card.barcode != null)
+                                  Positioned(
+                                    top: 12,
+                                    right: 16,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.85),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.qr_code, size: 16, color: Colors.black87),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          card.name,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 1.2,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (card.description.isNotEmpty) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            card.description,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.white.withOpacity(0.9),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -233,9 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            PageTransition(
-              page: const AddCardScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const AddCardScreen()),
           );
         },
         tooltip: 'Add Card',
