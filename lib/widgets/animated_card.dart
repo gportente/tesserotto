@@ -79,70 +79,90 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
                     ),
                   ],
                 ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 16,
-                      top: 12,
-                      child: Opacity(
-                        opacity: 0.08,
-                        child: Text(
-                          widget.card.name.isNotEmpty ? widget.card.name[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            fontSize: 120,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -8,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (widget.card.barcode != null)
-                      Positioned(
-                        top: 12,
-                        right: 16,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.qr_code,
-                            size: 24,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.card.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (widget.card.description.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.card.description,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                child: Container(
+									decoration: BoxDecoration(
+										color: widget.cardColor,
+										borderRadius: BorderRadius.circular(28),
+										boxShadow: [
+											BoxShadow(
+												color: widget.cardColor.withOpacity(0.25),
+												blurRadius: 16,
+												offset: const Offset(0, 8),
+											),
+										],
+									),
+									child: Stack(
+										children: [
+											Positioned(
+												left: 16,
+												top: 0,
+												child: Opacity(
+													opacity: 0.08,
+													child: Text(
+														widget.card.name.isNotEmpty ? widget.card.name[0].toUpperCase() : '?',
+														style: const TextStyle(
+															fontSize: 120,
+															fontWeight: FontWeight.bold,
+															letterSpacing: -8,
+														),
+													),
+												),
+											),
+											if (widget.card.barcode != null)
+												Positioned(
+													top: 12,
+													right: 16,
+													child: Container(
+														padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+														decoration: BoxDecoration(
+															color: Colors.white.withOpacity(0.85),
+															borderRadius: BorderRadius.circular(16),
+														),
+														child: const Row(
+															children: [
+																Icon(Icons.qr_code, size: 16, color: Colors.black87),
+															],
+														),
+													),
+												),
+											Center(
+												child: Padding(
+													padding: const EdgeInsets.symmetric(horizontal: 12.0),
+													child: Column(
+														mainAxisAlignment: MainAxisAlignment.center,
+														children: [
+															Text(
+																widget.card.name,
+																textAlign: TextAlign.center,
+																style: const TextStyle(
+																	fontSize: 20,
+																	fontWeight: FontWeight.bold,
+																	color: Colors.white,
+																	letterSpacing: 1.2,
+																),
+																maxLines: 2,
+																overflow: TextOverflow.ellipsis,
+															),
+															if (widget.card.description.isNotEmpty) ...[
+																const SizedBox(height: 4),
+																Text(
+																	widget.card.description,
+																	textAlign: TextAlign.center,
+																	style: TextStyle(
+																		fontSize: 13,
+																		color: Colors.white.withOpacity(0.9),
+																	),
+																	maxLines: 1,
+																	overflow: TextOverflow.ellipsis,
+																),
+															],
+														],
+													),
+												),
+											),
+										],
+									),
+								),
               ),
             ),
           ),
