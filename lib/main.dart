@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'screens/locale_changer.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
+import 'widgets/deep_link_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,48 +23,50 @@ class FidelityCardsApp extends ConsumerWidget {
     final colorScheme = ColorScheme.fromSeed(seedColor: Colors.indigo);
     final settings = ref.watch(settingsProvider);
     
-    return MaterialApp(
-      title: AppLocalizations.of(context)?.appTitle ?? 'Tesserotto',
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        appBarTheme: const AppBarTheme(
-          elevation: 4,
-          centerTitle: true,
-          shadowColor: Colors.black26,
+    return DeepLinkHandler(
+      child: MaterialApp(
+        title: AppLocalizations.of(context)?.appTitle ?? 'Tesserotto',
+        theme: ThemeData(
+          colorScheme: colorScheme,
+          useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          appBarTheme: const AppBarTheme(
+            elevation: 4,
+            centerTitle: true,
+            shadowColor: Colors.black26,
+          ),
+          scaffoldBackgroundColor: colorScheme.surface,
+          fontFamily: GoogleFonts.poppins().fontFamily,
         ),
-        scaffoldBackgroundColor: colorScheme.surface,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.indigo,
+            brightness: Brightness.dark,
+          ),
+          useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(ThemeData(brightness: Brightness.dark).textTheme),
+          appBarTheme: const AppBarTheme(
+            elevation: 4,
+            centerTitle: true,
+            shadowColor: Colors.black54,
+          ),
+          scaffoldBackgroundColor: const Color(0xFF181A20),
+          fontFamily: GoogleFonts.poppins().fontFamily,
+        ),
+        themeMode: settings.themeMode,
+        locale: settings.locale,
+        supportedLocales: const [
+          Locale('en'),
+          Locale('it'),
+        ],
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: const HomeScreen(),
       ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(ThemeData(brightness: Brightness.dark).textTheme),
-        appBarTheme: const AppBarTheme(
-          elevation: 4,
-          centerTitle: true,
-          shadowColor: Colors.black54,
-        ),
-        scaffoldBackgroundColor: const Color(0xFF181A20),
-        fontFamily: GoogleFonts.poppins().fontFamily,
-      ),
-      themeMode: settings.themeMode,
-      locale: settings.locale,
-      supportedLocales: const [
-        Locale('en'),
-        Locale('it'),
-      ],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const HomeScreen(),
     );
   }
 }

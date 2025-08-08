@@ -302,7 +302,7 @@ class ImportExportScreen extends ConsumerWidget {
                     ElevatedButton.icon(
                       onPressed: () => _importCards(context, ref),
                       icon: const Icon(Icons.download),
-                      label: Text(loc.import),
+                      label: Text(loc.importCard),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,

@@ -43,5 +43,8 @@
   "importFromCatimaDescription": "Importa carte da un file di backup di Catima",
   "deleteAllCardsTitle": "Elimina Tessere",
   "deleteAllCardsContent": "Sei sicuro di voler eliminare tutte le tessere? Questa azione è irreversibile.",
-  "deleteAllCardsConfirm": "Conferma"
+  "deleteAllCardsConfirm": "Conferma",
+  "importCard": "Importa Tessera",
+  "importCardMessage": "Vuoi importare questa tessera?",
+  "shareCardMessage": "Dai un'occhiata a questa tessera fedeltà"
 } 

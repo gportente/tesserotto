@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<links xmlns:android="http://schemas.android.com/apk/res/android">
+    <link>
+        <android:host>app.auxrideum.ddns.ms</android:host>
+        <android:pathPrefix>/import</android:pathPrefix>
+    </link>
+</links> 

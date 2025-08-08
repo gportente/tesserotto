@@ -45,5 +45,29 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>com.example.fidelitycards</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>tesserotto</string>
+            </array>
+            <key>CFBundleURLTypes</key>
+            <array>
+                <dict>
+                    <key>CFBundleURLSchemes</key>
+                    <array>
+                        <string>fidelitycards</string>
+                    </array>
+                    <key>CFBundleURLName</key>
+                    <string>com.example.fidelitycards</string>
+                </dict>
+            </array>
+        </dict>
+    </array>
   </dict>
 </plist>

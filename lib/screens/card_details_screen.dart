@@ -9,6 +9,8 @@ import '../providers/fidelity_cards_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:share_plus/share_plus.dart';
+import '../services/deep_link_service.dart';
 
 class CardDetailsScreen extends ConsumerStatefulWidget {
   final FidelityCard card;
@@ -252,21 +254,36 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
         title: Text(AppLocalizations.of(context)!.cardInfo),
         actions: [
           IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              final deepLink = DeepLinkService.generateDeepLink(card);
+              Share.share(
+                '${AppLocalizations.of(context)?.shareCardMessage ?? 'Check out this loyalty card'}\n\n'
+                '🔗 $deepLink',
+                subject: card.name,
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit Card',
             onPressed: () async {
-              await Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddCardScreen(cardToEdit: card),
                 ),
               );
-              setState(() {}); // forza il rebuild dopo la modifica
+              if (result == true) {
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            tooltip: 'Delete Cardd',
+            tooltip: 'Delete Card',
             onPressed: () async {
               final confirm = await showDialog<bool>(
                 context: context,

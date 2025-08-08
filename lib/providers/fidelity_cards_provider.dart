@@ -17,8 +17,15 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
   }
 
   Future<void> addCard(FidelityCard card) async {
-    await DatabaseHelper.instance.insertCard(card);
-    state = [...state, card];
+    // Genera un nuovo ID univoco per evitare conflitti
+    final newId = '${DateTime.now().millisecondsSinceEpoch}_${card.id.hashCode}';
+    final newCard = card.copyWith(
+      id: newId,
+      createdAt: DateTime.now(),
+    );
+    
+    await DatabaseHelper.instance.insertCard(newCard);
+    state = [...state, newCard];
   }
 
   Future<void> removeCard(String id) async {
