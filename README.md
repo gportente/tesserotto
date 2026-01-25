@@ -1,3 +1,8 @@
+<p>
+  <img src="assets/screenshots/preview2.jpg" width="300" alt="App Preview 2">
+  <img src="assets/screenshots/preview1.jpg" width="300" alt="App Preview 1">
+</p>
+
 # Tesserotto: Fidelity Card Management System
 
 ## Panoramica del Progetto
