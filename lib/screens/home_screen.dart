@@ -1,12 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:fidelity_cards_manager/screens/import_export_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:convert';
-import 'dart:io';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../widgets/animated_card.dart';
@@ -16,6 +11,7 @@ import 'card_details_screen.dart';
 import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
+import '../theme/app_colors.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -59,7 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 32),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              title: Text(AppLocalizations.of(context)!.settings),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -134,7 +130,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(width: 8),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.sort),
-                  tooltip: 'Sort',
                   onSelected: (value) {
                     setState(() {
                       _sort = value;
@@ -197,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         final card = filteredCards[index];
                         final cardColor = card.colorValue != null
                             ? Color(card.colorValue!)
-                            : _getRandomCardColor(card.name);
+                            : cardColorFromName(card.name);
                         return AnimatedCard(
                           card: card,
                           cardColor: cardColor,
@@ -244,20 +239,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
-
-Color _getRandomCardColor(String name) {
-  final colors = [
-    const Color(0xFF4F8FFF),
-    const Color(0xFF6FE7DD),
-    const Color(0xFFFFB86B),
-    const Color(0xFFFC5C7D),
-    const Color(0xFF43E97B),
-    const Color(0xFF38F9D7),
-    const Color(0xFF667EEA),
-    const Color(0xFF764BA2),
-    const Color(0xFFFF6A6A),
-    const Color(0xFF36D1C4),
-  ];
-  final hash = name.isNotEmpty ? name.codeUnits.reduce((a, b) => a + b) : 0;
-  return colors[hash % colors.length];
-} 
+ 

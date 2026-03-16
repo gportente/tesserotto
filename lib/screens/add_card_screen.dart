@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/app_colors.dart';
+import '../widgets/card_gradient_header.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:barcode/barcode.dart' as bc;
 
@@ -44,18 +46,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
     'upcE',
   ];
 
-  static const _colorPalette = [
-    Color(0xFF4F8FFF),
-    Color(0xFF6FE7DD),
-    Color(0xFFFFB86B),
-    Color(0xFFFC5C7D),
-    Color(0xFF43E97B),
-    Color(0xFF38F9D7),
-    Color(0xFF667EEA),
-    Color(0xFF764BA2),
-    Color(0xFFFF6A6A),
-    Color(0xFF36D1C4),
-  ];
+  static const _colorPalette = kCardPalette;
 
   bool _validateBarcode(String value, String type) {
     if (value.isEmpty) return true;
@@ -158,7 +149,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_barcodeError!),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -287,54 +278,14 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [cardColor, cardColor.withOpacity(0.7)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(36),
-                        bottomRight: Radius.circular(36),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Faint initial watermark
-                        Positioned(
-                          left: 32,
-                          top: 0,
-                          bottom: 0,
-                          child: Opacity(
-                            opacity: 0.10,
-                            child: Text(
-                              _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : '?',
-                              style: TextStyle(
-                                fontSize: 100,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -8,
-                                color: theme.colorScheme.onPrimary.withOpacity(0.15),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Live preview of card name
-                        Center(
-                          child: Text(
-                            _nameController.text.isNotEmpty ? _nameController.text : (widget.cardToEdit?.name ?? AppLocalizations.of(context)!.cardName),
-                            style: GoogleFonts.poppins(
-                              color: theme.colorScheme.onPrimary,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  CardGradientHeader(
+                    cardColor: cardColor,
+                    title: _nameController.text.isNotEmpty
+                        ? _nameController.text
+                        : (widget.cardToEdit?.name ?? AppLocalizations.of(context)!.cardName),
+                    watermarkChar: _nameController.text.isNotEmpty
+                        ? _nameController.text[0].toUpperCase()
+                        : '?',
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24),
@@ -467,7 +418,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                                             decoration: BoxDecoration(
                                               color: _selectedColorValue != null && !_colorPalette.any((c) => c.value == _selectedColorValue)
                                                   ? Color(_selectedColorValue!)
-                                                  : Colors.grey[300],
+                                                  : theme.colorScheme.surfaceContainerHighest,
                                               shape: BoxShape.circle,
                                               border: Border.all(color: Colors.black, width: 2),
                                             ),

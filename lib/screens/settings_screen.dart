@@ -4,7 +4,6 @@ import '../providers/settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import 'locale_changer.dart';
 import '../providers/fidelity_cards_provider.dart';
-import 'import_export_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -51,10 +50,10 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            leading: Icon(Icons.delete_forever, color: Theme.of(context).colorScheme.error),
             title: Text(
               AppLocalizations.of(context)!.deleteAllCardsTitle,
-              style: const TextStyle(color: Color.fromRGBO(244, 67, 54, 1)),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             onTap: () async {
               final confirm = await showDialog<bool>(
@@ -69,8 +68,8 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
                       ),
                       onPressed: () => Navigator.pop(context, true),
                       child: Text(AppLocalizations.of(context)!.deleteCardConfirm),

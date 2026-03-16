@@ -79,19 +79,7 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
                     ),
                   ],
                 ),
-                child: Container(
-									decoration: BoxDecoration(
-										color: widget.cardColor,
-										borderRadius: BorderRadius.circular(28),
-										boxShadow: [
-											BoxShadow(
-												color: widget.cardColor.withOpacity(0.25),
-												blurRadius: 16,
-												offset: const Offset(0, 8),
-											),
-										],
-									),
-									child: Stack(
+                child: Stack(
 										children: [
 											Positioned(
 												left: 16,
@@ -162,7 +150,6 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
 											),
 										],
 									),
-								),
               ),
             ),
           ),

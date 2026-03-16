@@ -1,5 +1,8 @@
 import 'package:fidelity_cards_manager/screens/add_card_screen.dart';
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../widgets/card_gradient_header.dart';
+import '../widgets/page_transition.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models/fidelity_card.dart';
 import 'package:barcode_widget/barcode_widget.dart';
@@ -58,22 +61,6 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
     super.dispose();
   }
 
-  Color _getCardColor(String name) {
-    final colors = [
-      const Color(0xFF4F8FFF),
-      const Color(0xFF6FE7DD),
-      const Color(0xFFFFB86B),
-      const Color(0xFFFC5C7D),
-      const Color(0xFF43E97B),
-      const Color(0xFF38F9D7),
-      const Color(0xFF667EEA),
-      const Color(0xFF764BA2),
-      const Color(0xFFFF6A6A),
-      const Color(0xFF36D1C4),
-    ];
-    final hash = name.isNotEmpty ? name.codeUnits.reduce((a, b) => a + b) : 0;
-    return colors[hash % colors.length];
-  }
 
   bool _isValidBarcode(String data, String? type) {
     switch (type) {
@@ -237,7 +224,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
 
   void _showQrShareSheet(BuildContext context) {
     final shareUrl = DeepLinkService.generateDeepLink(card);
-    final cardColor = card.colorValue != null ? Color(card.colorValue!) : _getCardColor(card.name);
+    final cardColor = card.colorValue != null ? Color(card.colorValue!) : cardColorFromName(card.name);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -253,7 +240,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2)),
             ),
             Text(card.name,
@@ -282,7 +269,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             const SizedBox(height: 20),
             Text(AppLocalizations.of(context)!.shareViaQr,
                 style: GoogleFonts.poppins(
-                    fontSize: 14, color: Colors.grey.shade600)),
+                    fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
           ],
         ),
@@ -299,7 +286,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
     final theme = Theme.of(context);
     final cardColor = card.colorValue != null
         ? Color(card.colorValue!)
-        : _getCardColor(card.name);
+        : cardColorFromName(card.name);
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
@@ -330,8 +317,8 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => AddCardScreen(cardToEdit: card),
+                PageTransition(
+                  page: AddCardScreen(cardToEdit: card),
                 ),
               );
               if (result == true) {
@@ -362,54 +349,13 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
+          CardGradientHeader(
+            cardColor: cardColor,
+            title: card.name,
+            watermarkChar: card.name.isNotEmpty ? card.name[0].toUpperCase() : '?',
             height: 140,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [cardColor, cardColor.withOpacity(0.7)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(36),
-                bottomRight: Radius.circular(36),
-              ),
-            ),
-            child: Stack(
-              children: [
-                // Faint initial watermark
-                Positioned(
-                  left: 32,
-                  top: 0,
-                  bottom: 0,
-                  child: Opacity(
-                    opacity: 0.10,
-                    child: Text(
-                      card.name.isNotEmpty ? card.name[0].toUpperCase() : '?',
-                      style: TextStyle(
-                        fontSize: 110,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -8,
-                        color: theme.colorScheme.onPrimary.withOpacity(0.15),
-                      ),
-                    ),
-                  ),
-                ),
-                // Card name
-                Center(
-                  child: Text(
-                    card.name,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            titleFontSize: 32,
+            watermarkFontSize: 110,
           ),
           Expanded(
             child: SingleChildScrollView(
