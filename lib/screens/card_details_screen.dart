@@ -6,7 +6,7 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/fidelity_cards_provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:share_plus/share_plus.dart';
@@ -235,6 +235,61 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
     }
   }
 
+  void _showQrShareSheet(BuildContext context) {
+    final shareUrl = DeepLinkService.generateDeepLink(card);
+    final cardColor = card.colorValue != null ? Color(card.colorValue!) : _getCardColor(card.name);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2)),
+            ),
+            Text(card.name,
+                style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: cardColor)),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4))
+                  ]),
+              child: QrImageView(
+                  data: shareUrl,
+                  version: QrVersions.auto,
+                  size: 240.0,
+                  backgroundColor: Colors.white),
+            ),
+            const SizedBox(height: 20),
+            Text(AppLocalizations.of(context)!.shareViaQr,
+                style: GoogleFonts.poppins(
+                    fontSize: 14, color: Colors.grey.shade600)),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cards = ref.watch(fidelityCardsProvider);
@@ -254,12 +309,17 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
         title: Text(AppLocalizations.of(context)!.cardInfo),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code),
+            tooltip: AppLocalizations.of(context)!.shareViaQr,
+            onPressed: () => _showQrShareSheet(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.share),
+            tooltip: AppLocalizations.of(context)!.shareViaLink,
             onPressed: () {
               final deepLink = DeepLinkService.generateDeepLink(card);
               Share.share(
-                '${AppLocalizations.of(context)?.shareCardMessage ?? 'Check out this loyalty card'}\n\n'
-                '🔗 $deepLink',
+                '${AppLocalizations.of(context)!.shareCardMessage}\n\n🔗 $deepLink',
                 subject: card.name,
               );
             },

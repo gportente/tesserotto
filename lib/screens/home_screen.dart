@@ -14,7 +14,7 @@ import '../widgets/page_transition.dart';
 import 'add_card_screen.dart';
 import 'card_details_screen.dart';
 import 'settings_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {

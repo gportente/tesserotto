@@ -14,7 +14,6 @@
   "type": "Tipo",
   "scan": "Scansiona",
   "rescan": "Riscansiona",
-  "random": "Casuale",
   "cancelScanning": "Annulla Scansione",
   "cardInfo": "Info Tessera",
   "deleteCard": "Elimina Tessera",
@@ -46,5 +45,7 @@
   "deleteAllCardsConfirm": "Conferma",
   "importCard": "Importa Tessera",
   "importCardMessage": "Vuoi importare questa tessera?",
-  "shareCardMessage": "Dai un'occhiata a questa tessera fedeltà"
+  "shareCardMessage": "Dai un'occhiata a questa tessera fedeltà",
+  "shareViaQr": "Condividi tramite QR",
+  "shareViaLink": "Condividi tramite link"
 } 

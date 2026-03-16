@@ -14,7 +14,6 @@
   "type": "Type",
   "scan": "Scan",
   "rescan": "Rescan",
-  "random": "Random",
   "cancelScanning": "Cancel Scanning",
   "cardInfo": "Card Info",
   "deleteCard": "Delete Card",
@@ -45,5 +44,7 @@
   "deleteAllCardsTitle": "Delete Cards",
   "deleteAllCardsContent": "Are you sure you want to delete all cards? This action cannot be undone.",
   "deleteAllCardsConfirm": "Confirm",
-  "shareCardMessage": "Check out this loyalty card"
+  "shareCardMessage": "Check out this loyalty card",
+  "shareViaQr": "Share via QR code",
+  "shareViaLink": "Share via link"
 } 

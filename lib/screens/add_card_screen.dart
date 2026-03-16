@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:barcode/barcode.dart' as bc;
 
@@ -27,7 +26,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   String? _barcodeType;
   String? _barcodeError;
   int? _selectedColorValue;
-  bool _isScanning = false;
+  late bool _isScanning;
 
   static const _barcodeTypes = [
     'aztec',
@@ -122,6 +121,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   void initState() {
     super.initState();
     if (widget.cardToEdit != null) {
+      _isScanning = false;
       _nameController.text = widget.cardToEdit!.name;
       _descriptionController.text = widget.cardToEdit!.description;
       _selectedColorValue = widget.cardToEdit!.colorValue ?? _colorPalette[0].value;
@@ -129,6 +129,8 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
       _barcodeType = widget.cardToEdit!.barcodeType;
       _barcodeController.text = widget.cardToEdit!.barcode ?? '';
       _validateCurrentBarcode();
+    } else {
+      _isScanning = true;
     }
   }
 
@@ -140,85 +142,6 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
         _barcodeError = null;
       }
     }
-  }
-
-  String _generateRandomBarcodeValue(String type) {
-    final rand = Random();
-    switch (type) {
-      case 'ean13':
-        final base = List.generate(12, (_) => rand.nextInt(10));
-        final check = _ean13CheckDigit(base);
-        return [...base, check].join();
-      case 'ean8':
-        final base = List.generate(7, (_) => rand.nextInt(10));
-        final check = _ean8CheckDigit(base);
-        return [...base, check].join();
-      case 'upcA':
-        final base = List.generate(11, (_) => rand.nextInt(10));
-        final check = _upcACheckDigit(base);
-        return [...base, check].join();
-      case 'upcE':
-        return '04210005';
-      case 'code128':
-        return String.fromCharCodes(List.generate(10, (_) => rand.nextInt(94) + 33)); // ASCII 33-126
-      case 'code39':
-        const chars39 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. \$/+%';
-        return List.generate(8, (_) => chars39[rand.nextInt(chars39.length)]).join();
-      case 'code93':
-        const chars93 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. \$/+%';
-        return List.generate(8, (_) => chars93[rand.nextInt(chars93.length)]).join();
-      case 'itf':
-        final len = (rand.nextInt(5) + 2) * 2; // even length, min 4
-        return List.generate(len, (_) => rand.nextInt(10)).join();
-      case 'qrCode':
-        return 'QR-${rand.nextInt(1000000)}';
-      case 'aztec':
-        return 'AZTEC-${rand.nextInt(1000000)}';
-      case 'dataMatrix':
-        return 'DM-${rand.nextInt(1000000)}';
-      case 'pdf417':
-        return 'PDF417-${rand.nextInt(1000000)}';
-      case 'codabar':
-        const charsCodabar = '0123456789-\$:/.+';
-        return List.generate(8, (_) => charsCodabar[rand.nextInt(charsCodabar.length)]).join();
-      default:
-        return '1234567890';
-    }
-  }
-
-  int _ean13CheckDigit(List<int> digits) {
-    int sum = 0;
-    for (int i = 0; i < 12; i++) {
-      sum += digits[i] * ((i % 2 == 0) ? 1 : 3);
-    }
-    return (10 - (sum % 10)) % 10;
-  }
-
-  int _ean8CheckDigit(List<int> digits) {
-    int sum = 0;
-    for (int i = 0; i < 7; i++) {
-      sum += digits[i] * ((i % 2 == 0) ? 3 : 1);
-    }
-    return (10 - (sum % 10)) % 10;
-  }
-
-  int _upcACheckDigit(List<int> digits) {
-    int sum = 0;
-    for (int i = 0; i < 11; i++) {
-      sum += digits[i] * ((i % 2 == 0) ? 3 : 1);
-    }
-    return (10 - (sum % 10)) % 10;
-  }
-
-  void _setRandomBarcode() {
-    final rand = Random();
-    final type = _barcodeTypes[rand.nextInt(_barcodeTypes.length)];
-    final value = _generateRandomBarcodeValue(type);
-    setState(() {
-      _barcodeType = type;
-      _barcode = value;
-      _barcodeController.text = value;
-    });
   }
 
   @override
@@ -614,19 +537,6 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                                             elevation: 0,
                                           ),
                                           child: Text(_barcode == null ? AppLocalizations.of(context)!.scan : AppLocalizations.of(context)!.rescan),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        OutlinedButton(
-                                          onPressed: _setRandomBarcode,
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: cardColor,
-                                            side: BorderSide(color: cardColor, width: 1.5),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                          ),
-                                          child: Text(AppLocalizations.of(context)!.random),
                                         ),
                                       ],
                                     ),
