@@ -12,6 +12,7 @@ import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import '../theme/app_colors.dart';
+import '../services/home_widget_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,14 +30,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final cards = ref.watch(fidelityCardsProvider);
     List<FidelityCard> filteredCards = (_search.isEmpty
         ? cards
-        : cards.where((c) => c.name.toLowerCase().contains(_search.toLowerCase())))
+        : cards.where((c) {
+            final q = _search.toLowerCase();
+            return c.name.toLowerCase().contains(q) ||
+                   c.description.toLowerCase().contains(q);
+          }))
       .whereType<FidelityCard>()
       .toList();
-    if (_sort == 'name') {
-      filteredCards.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    } else if (_sort == 'openCount') {
-      filteredCards.sort((b, a) => a.openCount.compareTo(b.openCount));
-    }
+    filteredCards.sort((a, b) {
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      if (_sort == 'name') return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      return b.openCount.compareTo(a.openCount);
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -206,16 +212,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             );
                           },
                           onLongPress: () async {
-                            final confirm = await showDialog<bool>(
+                            final loc = AppLocalizations.of(context)!;
+                            await showModalBottomSheet(
                               context: context,
-                              builder: (context) => DeleteCardDialog(
-                                cardName: card.name,
-                                loc: AppLocalizations.of(context)!,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                              ),
+                              builder: (ctx) => SafeArea(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      width: 40,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ListTile(
+                                      leading: Icon(
+                                        card.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                                        color: Theme.of(ctx).colorScheme.primary,
+                                      ),
+                                      title: Text(card.isFavorite ? loc.removeFromFavorites : loc.addToFavorites),
+                                      onTap: () {
+                                        Navigator.pop(ctx);
+                                        ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: Icon(Icons.widgets_outlined, color: Theme.of(ctx).colorScheme.primary),
+                                      title: Text(loc.pinToWidget),
+                                      onTap: () async {
+                                        Navigator.pop(ctx);
+                                        await HomeWidgetService.pinCard(card);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text(loc.pinnedToWidget)),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.delete_outline, color: Colors.red),
+                                      title: Text(loc.deleteCardAction, style: const TextStyle(color: Colors.red)),
+                                      onTap: () async {
+                                        Navigator.pop(ctx);
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) => DeleteCardDialog(
+                                            cardName: card.name,
+                                            loc: AppLocalizations.of(context)!,
+                                          ),
+                                        );
+                                        if (confirm == true) {
+                                          ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(height: 8),
+                                  ],
+                                ),
                               ),
                             );
-                            if (confirm == true) {
-                              ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
-                            }
                           },
                         );
                       },

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'database/database_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -12,6 +14,9 @@ import 'widgets/deep_link_handler.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.database;
+  if (Platform.isIOS) {
+    await HomeWidget.setAppGroupId('group.com.gportente.tesserotto');
+  }
   runApp(const ProviderScope(child: LocaleChanger(child: FidelityCardsApp())));
 }
 

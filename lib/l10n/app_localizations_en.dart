@@ -150,4 +150,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareViaLink => 'Share via link';
+
+  @override
+  String get driveBackupSection => 'Google Drive';
+
+  @override
+  String get driveSignIn => 'Sign in with Google';
+
+  @override
+  String get driveSignOut => 'Sign out';
+
+  @override
+  String get driveBackupNow => 'Back up now';
+
+  @override
+  String get driveRestoreButton => 'Restore from Drive';
+
+  @override
+  String driveSignedInAs(String email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String driveLastBackup(String date) {
+    return 'Last backup: $date';
+  }
+
+  @override
+  String get driveBackupSuccess => 'Backup completed';
+
+  @override
+  String get driveRestoreSuccess => 'Restore completed';
+
+  @override
+  String get driveBackupError => 'Backup failed';
+
+  @override
+  String get driveRestoreError => 'Restore failed';
+
+  @override
+  String get driveNoBackupFound => 'No backup found on Drive';
+
+  @override
+  String get driveRestoreConfirmTitle => 'Restore from Drive';
+
+  @override
+  String get driveRestoreConfirmContent => 'This will replace all existing cards with the backup. Continue?';
+
+  @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from favorites';
+
+  @override
+  String get deleteCardAction => 'Delete card';
+
+  @override
+  String get pinToWidget => 'Set as home screen widget';
+
+  @override
+  String get pinnedToWidget => 'Card set as widget';
 }

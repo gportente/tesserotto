@@ -6,6 +6,7 @@ class FidelityCard {
   final String? barcodeType;
   final int? colorValue;
   final int openCount;
+  final bool isFavorite;
   final DateTime createdAt;
 
   FidelityCard({
@@ -16,6 +17,7 @@ class FidelityCard {
     this.barcodeType,
     this.colorValue,
     this.openCount = 0,
+    this.isFavorite = false,
     required this.createdAt,
   });
 
@@ -27,6 +29,7 @@ class FidelityCard {
     String? barcodeType,
     int? colorValue,
     int? openCount,
+    bool? isFavorite,
     DateTime? createdAt,
   }) {
     return FidelityCard(
@@ -37,6 +40,7 @@ class FidelityCard {
       barcodeType: barcodeType ?? this.barcodeType,
       colorValue: colorValue ?? this.colorValue,
       openCount: openCount ?? this.openCount,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -49,6 +53,7 @@ class FidelityCard {
         'barcodeType': barcodeType,
         'colorValue': colorValue,
         'openCount': openCount,
+        'isFavorite': isFavorite ? 1 : 0,
         'createdAt': createdAt.toIso8601String(),
       };
 
@@ -60,6 +65,7 @@ class FidelityCard {
         barcodeType: json['barcodeType'] as String?,
         colorValue: json['colorValue'] as int?,
         openCount: json['openCount'] as int? ?? 0,
+        isFavorite: (json['isFavorite'] as int? ?? 0) == 1,
         createdAt: DateTime.parse(json['createdAt'] as String? ?? json['created_at'] as String),
       );
 } 

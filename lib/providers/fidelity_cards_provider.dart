@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/fidelity_card.dart';
 import '../database/database_helper.dart';
+import '../services/home_widget_service.dart';
 
 final fidelityCardsProvider = StateNotifierProvider<FidelityCardsNotifier, List<FidelityCard>>((ref) {
   return FidelityCardsNotifier();
@@ -23,7 +24,7 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
       id: newId,
       createdAt: DateTime.now(),
     );
-    
+
     await DatabaseHelper.instance.insertCard(newCard);
     state = [...state, newCard];
   }
@@ -31,6 +32,7 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
   Future<void> removeCard(String id) async {
     await DatabaseHelper.instance.deleteCard(id);
     state = state.where((card) => card.id != id).toList();
+    await HomeWidgetService.unpinIfDeleted(id);
   }
 
   Future<void> updateCard(FidelityCard updatedCard) async {
@@ -44,10 +46,18 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
     await updateCard(updatedCard);
   }
 
+  Future<void> toggleFavorite(String id) async {
+    final card = state.firstWhere((c) => c.id == id);
+    final updated = card.copyWith(isFavorite: !card.isFavorite);
+    await DatabaseHelper.instance.updateCard(updated);
+    state = state.map((c) => c.id == id ? updated : c).toList();
+  }
+
   Future<void> clearAll() async {
     final db = await DatabaseHelper.instance.database;
     await db.delete('fidelity_cards');
     state = [];
+    await HomeWidgetService.unpinCard();
   }
 
   Future<void> importCards(List<FidelityCard> cards) async {
@@ -58,4 +68,4 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
     }
     state = cards;
   }
-} 
+}

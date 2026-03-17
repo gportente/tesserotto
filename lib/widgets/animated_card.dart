@@ -113,6 +113,12 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
 														),
 													),
 												),
+											if (widget.card.isFavorite)
+												Positioned(
+													bottom: 10,
+													right: 14,
+													child: Icon(Icons.star_rounded, color: Colors.white.withOpacity(0.9), size: 20),
+												),
 											Center(
 												child: Padding(
 													padding: const EdgeInsets.symmetric(horizontal: 12.0),

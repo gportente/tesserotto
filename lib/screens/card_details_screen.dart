@@ -14,6 +14,7 @@ import '../widgets/delete_card_dialog.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/deep_link_service.dart';
+import '../services/home_widget_service.dart';
 
 class CardDetailsScreen extends ConsumerStatefulWidget {
   final FidelityCard card;
@@ -293,13 +294,8 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
         backgroundColor: cardColor,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text(AppLocalizations.of(context)!.cardInfo),
+        //title: Text(AppLocalizations.of(context)!.cardInfo),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code),
-            tooltip: AppLocalizations.of(context)!.shareViaQr,
-            onPressed: () => _showQrShareSheet(context),
-          ),
           IconButton(
             icon: const Icon(Icons.share),
             tooltip: AppLocalizations.of(context)!.shareViaLink,
@@ -312,37 +308,56 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit Card',
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: AppLocalizations.of(context)!.editCard,
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                PageTransition(
-                  page: AddCardScreen(cardToEdit: card),
-                ),
+                PageTransition(page: AddCardScreen(cardToEdit: card)),
               );
-              if (result == true) {
-                if (mounted) {
-                  Navigator.pop(context);
-                }
-              }
+              if (result == true && mounted) Navigator.pop(context);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            tooltip: 'Delete Card',
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => DeleteCardDialog(
-                  cardName: card.name,
-                  loc: AppLocalizations.of(context)!,
-                ),
-              );
-              if (confirm == true) {
-                ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
-                Navigator.pop(context);
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            color: Theme.of(context).colorScheme.surface,
+            onSelected: (value) async {
+              final loc = AppLocalizations.of(context)!;
+              switch (value) {
+                case 'favorite':
+                  ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
+                case 'qr':
+                  _showQrShareSheet(context);
+                case 'widget':
+                  await HomeWidgetService.pinCard(card);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(loc.pinnedToWidget)),
+                    );
+                  }
+                case 'delete':
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => DeleteCardDialog(
+                      cardName: card.name,
+                      loc: AppLocalizations.of(context)!,
+                    ),
+                  );
+                  if (confirm == true) {
+                    ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
+                    if (mounted) Navigator.pop(context);
+                  }
               }
+            },
+            itemBuilder: (context) {
+              final loc = AppLocalizations.of(context)!;
+              return [
+                PopupMenuItem(value: 'favorite', child: ListTile(leading: Icon(card.isFavorite ? Icons.star_rounded : Icons.star_border_rounded), title: Text(card.isFavorite ? loc.removeFromFavorites : loc.addToFavorites), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
+                PopupMenuItem(value: 'qr', child: ListTile(leading: const Icon(Icons.qr_code), title: Text(loc.shareViaQr), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
+                PopupMenuItem(value: 'widget', child: ListTile(leading: const Icon(Icons.widgets_outlined), title: Text(loc.pinToWidget), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
+                const PopupMenuDivider(),
+                PopupMenuItem(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline, color: Colors.red), title: Text(loc.deleteCard, style: const TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
+              ];
             },
           ),
         ],

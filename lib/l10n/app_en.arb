@@ -46,5 +46,38 @@
   "deleteAllCardsConfirm": "Confirm",
   "shareCardMessage": "Check out this loyalty card",
   "shareViaQr": "Share via QR code",
-  "shareViaLink": "Share via link"
+  "shareViaLink": "Share via link",
+  "driveBackupSection": "Google Drive",
+  "driveSignIn": "Sign in with Google",
+  "driveSignOut": "Sign out",
+  "driveBackupNow": "Back up now",
+  "driveRestoreButton": "Restore from Drive",
+  "driveSignedInAs": "Signed in as {email}",
+  "@driveSignedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "driveLastBackup": "Last backup: {date}",
+  "@driveLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "driveBackupSuccess": "Backup completed",
+  "driveRestoreSuccess": "Restore completed",
+  "driveBackupError": "Backup failed",
+  "driveRestoreError": "Restore failed",
+  "driveNoBackupFound": "No backup found on Drive",
+  "driveRestoreConfirmTitle": "Restore from Drive",
+  "driveRestoreConfirmContent": "This will replace all existing cards with the backup. Continue?",
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
+  "deleteCardAction": "Delete card",
+  "pinToWidget": "Set as home screen widget",
+  "pinnedToWidget": "Card set as widget"
 } 

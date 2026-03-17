@@ -150,4 +150,65 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get shareViaLink => 'Condividi tramite link';
+
+  @override
+  String get driveBackupSection => 'Google Drive';
+
+  @override
+  String get driveSignIn => 'Accedi con Google';
+
+  @override
+  String get driveSignOut => 'Disconnetti';
+
+  @override
+  String get driveBackupNow => 'Esegui backup';
+
+  @override
+  String get driveRestoreButton => 'Ripristina da Drive';
+
+  @override
+  String driveSignedInAs(String email) {
+    return 'Connesso come $email';
+  }
+
+  @override
+  String driveLastBackup(String date) {
+    return 'Ultimo backup: $date';
+  }
+
+  @override
+  String get driveBackupSuccess => 'Backup completato';
+
+  @override
+  String get driveRestoreSuccess => 'Ripristino completato';
+
+  @override
+  String get driveBackupError => 'Errore durante il backup';
+
+  @override
+  String get driveRestoreError => 'Errore durante il ripristino';
+
+  @override
+  String get driveNoBackupFound => 'Nessun backup trovato su Drive';
+
+  @override
+  String get driveRestoreConfirmTitle => 'Ripristina da Drive';
+
+  @override
+  String get driveRestoreConfirmContent => 'Questa operazione sostituirà tutte le tessere esistenti con quelle del backup. Continuare?';
+
+  @override
+  String get addToFavorites => 'Aggiungi ai preferiti';
+
+  @override
+  String get removeFromFavorites => 'Rimuovi dai preferiti';
+
+  @override
+  String get deleteCardAction => 'Elimina tessera';
+
+  @override
+  String get pinToWidget => 'Imposta come widget';
+
+  @override
+  String get pinnedToWidget => 'Tessera impostata come widget';
 }

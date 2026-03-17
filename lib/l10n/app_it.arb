@@ -47,5 +47,38 @@
   "importCardMessage": "Vuoi importare questa tessera?",
   "shareCardMessage": "Dai un'occhiata a questa tessera fedeltà",
   "shareViaQr": "Condividi tramite QR",
-  "shareViaLink": "Condividi tramite link"
+  "shareViaLink": "Condividi tramite link",
+  "driveBackupSection": "Google Drive",
+  "driveSignIn": "Accedi con Google",
+  "driveSignOut": "Disconnetti",
+  "driveBackupNow": "Esegui backup",
+  "driveRestoreButton": "Ripristina da Drive",
+  "driveSignedInAs": "Connesso come {email}",
+  "@driveSignedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "driveLastBackup": "Ultimo backup: {date}",
+  "@driveLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "driveBackupSuccess": "Backup completato",
+  "driveRestoreSuccess": "Ripristino completato",
+  "driveBackupError": "Errore durante il backup",
+  "driveRestoreError": "Errore durante il ripristino",
+  "driveNoBackupFound": "Nessun backup trovato su Drive",
+  "driveRestoreConfirmTitle": "Ripristina da Drive",
+  "driveRestoreConfirmContent": "Questa operazione sostituirà tutte le tessere esistenti con quelle del backup. Continuare?",
+  "addToFavorites": "Aggiungi ai preferiti",
+  "removeFromFavorites": "Rimuovi dai preferiti",
+  "deleteCardAction": "Elimina tessera",
+  "pinToWidget": "Imposta come widget",
+  "pinnedToWidget": "Tessera impostata come widget"
 } 

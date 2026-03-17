@@ -376,6 +376,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share via link'**
   String get shareViaLink;
+
+  /// No description provided for @driveBackupSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Drive'**
+  String get driveBackupSection;
+
+  /// No description provided for @driveSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get driveSignIn;
+
+  /// No description provided for @driveSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get driveSignOut;
+
+  /// No description provided for @driveBackupNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up now'**
+  String get driveBackupNow;
+
+  /// No description provided for @driveRestoreButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from Drive'**
+  String get driveRestoreButton;
+
+  /// No description provided for @driveSignedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}'**
+  String driveSignedInAs(String email);
+
+  /// No description provided for @driveLastBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup: {date}'**
+  String driveLastBackup(String date);
+
+  /// No description provided for @driveBackupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup completed'**
+  String get driveBackupSuccess;
+
+  /// No description provided for @driveRestoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore completed'**
+  String get driveRestoreSuccess;
+
+  /// No description provided for @driveBackupError.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup failed'**
+  String get driveBackupError;
+
+  /// No description provided for @driveRestoreError.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed'**
+  String get driveRestoreError;
+
+  /// No description provided for @driveNoBackupFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup found on Drive'**
+  String get driveNoBackupFound;
+
+  /// No description provided for @driveRestoreConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from Drive'**
+  String get driveRestoreConfirmTitle;
+
+  /// No description provided for @driveRestoreConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will replace all existing cards with the backup. Continue?'**
+  String get driveRestoreConfirmContent;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
+
+  /// No description provided for @deleteCardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete card'**
+  String get deleteCardAction;
+
+  /// No description provided for @pinToWidget.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as home screen widget'**
+  String get pinToWidget;
+
+  /// No description provided for @pinnedToWidget.
+  ///
+  /// In en, this message translates to:
+  /// **'Card set as widget'**
+  String get pinnedToWidget;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -36,19 +36,18 @@ class DatabaseHelper {
         barcodeType TEXT,
         colorValue INTEGER,
         openCount INTEGER,
+        isFavorite INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL
       )
     ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute('ALTER TABLE fidelity_cards ADD COLUMN colorValue INTEGER;');
+    final columns = await db.rawQuery('PRAGMA table_info(fidelity_cards)');
+    final hasIsFavorite = columns.any((col) => col['name'] == 'isFavorite');
+    if (!hasIsFavorite) {
+      await db.execute('ALTER TABLE fidelity_cards ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0;');
     }
-    if (oldVersion < 3) {
-      await db.execute('ALTER TABLE fidelity_cards ADD COLUMN openCount INTEGER DEFAULT 0;');
-    }
-    // Add future migrations here
   }
 
   Future<void> insertCard(FidelityCard card) async {
@@ -63,6 +62,7 @@ class DatabaseHelper {
         'barcodeType': card.barcodeType,
         'colorValue': card.colorValue,
         'openCount': card.openCount,
+        'isFavorite': card.isFavorite ? 1 : 0,
         'created_at': card.createdAt.toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -82,6 +82,7 @@ class DatabaseHelper {
         barcodeType: maps[i]['barcodeType'],
         colorValue: maps[i]['colorValue'],
         openCount: maps[i]['openCount'] ?? 0,
+        isFavorite: (maps[i]['isFavorite'] as int? ?? 0) == 1,
         createdAt: DateTime.parse(maps[i]['created_at']),
       );
     });
@@ -98,6 +99,7 @@ class DatabaseHelper {
         'barcodeType': card.barcodeType,
         'colorValue': card.colorValue,
         'openCount': card.openCount,
+        'isFavorite': card.isFavorite ? 1 : 0,
       },
       where: 'id = ?',
       whereArgs: [card.id],
