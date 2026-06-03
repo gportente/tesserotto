@@ -1,3 +1,5 @@
+import 'card_location.dart';
+
 class FidelityCard {
   final String id;
   final String name;
@@ -8,6 +10,7 @@ class FidelityCard {
   final int openCount;
   final bool isFavorite;
   final DateTime createdAt;
+  final List<CardLocation> locations;
 
   FidelityCard({
     required this.id,
@@ -19,6 +22,7 @@ class FidelityCard {
     this.openCount = 0,
     this.isFavorite = false,
     required this.createdAt,
+    this.locations = const [],
   });
 
   FidelityCard copyWith({
@@ -31,6 +35,7 @@ class FidelityCard {
     int? openCount,
     bool? isFavorite,
     DateTime? createdAt,
+    List<CardLocation>? locations,
   }) {
     return FidelityCard(
       id: id ?? this.id,
@@ -42,6 +47,7 @@ class FidelityCard {
       openCount: openCount ?? this.openCount,
       isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
+      locations: locations ?? this.locations,
     );
   }
 

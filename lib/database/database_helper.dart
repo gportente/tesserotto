@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/fidelity_card.dart';
+import '../models/card_location.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -20,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -40,13 +41,39 @@ class DatabaseHelper {
         created_at TEXT NOT NULL
       )
     ''');
+    await db.execute('''
+      CREATE TABLE card_locations(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        card_id TEXT NOT NULL,
+        address TEXT NOT NULL,
+        lat REAL NOT NULL,
+        lng REAL NOT NULL,
+        radius REAL NOT NULL DEFAULT 200,
+        FOREIGN KEY (card_id) REFERENCES fidelity_cards(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    final columns = await db.rawQuery('PRAGMA table_info(fidelity_cards)');
-    final hasIsFavorite = columns.any((col) => col['name'] == 'isFavorite');
-    if (!hasIsFavorite) {
-      await db.execute('ALTER TABLE fidelity_cards ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0;');
+    if (oldVersion < 2) {
+      final columns = await db.rawQuery('PRAGMA table_info(fidelity_cards)');
+      final hasIsFavorite = columns.any((col) => col['name'] == 'isFavorite');
+      if (!hasIsFavorite) {
+        await db.execute('ALTER TABLE fidelity_cards ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0;');
+      }
+    }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS card_locations(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          card_id TEXT NOT NULL,
+          address TEXT NOT NULL,
+          lat REAL NOT NULL,
+          lng REAL NOT NULL,
+          radius REAL NOT NULL DEFAULT 200,
+          FOREIGN KEY (card_id) REFERENCES fidelity_cards(id) ON DELETE CASCADE
+        )
+      ''');
     }
   }
 
@@ -88,6 +115,24 @@ class DatabaseHelper {
     });
   }
 
+  Future<FidelityCard?> getCardById(String id) async {
+    final db = await database;
+    final maps = await db.query('fidelity_cards', where: 'id = ?', whereArgs: [id]);
+    if (maps.isEmpty) return null;
+    final m = maps.first;
+    return FidelityCard(
+      id: m['id'] as String,
+      name: m['name'] as String,
+      description: m['description'] as String? ?? '',
+      barcode: m['barcode'] as String?,
+      barcodeType: m['barcodeType'] as String?,
+      colorValue: m['colorValue'] as int?,
+      openCount: m['openCount'] as int? ?? 0,
+      isFavorite: (m['isFavorite'] as int? ?? 0) == 1,
+      createdAt: DateTime.parse(m['created_at'] as String),
+    );
+  }
+
   Future<void> updateCard(FidelityCard card) async {
     final db = await database;
     await db.update(
@@ -108,15 +153,36 @@ class DatabaseHelper {
 
   Future<void> deleteCard(String id) async {
     final db = await database;
-    await db.delete(
-      'fidelity_cards',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('card_locations', where: 'card_id = ?', whereArgs: [id]);
+    await db.delete('fidelity_cards', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Card Locations ---
+
+  Future<void> insertLocation(CardLocation location) async {
+    final db = await database;
+    await db.insert('card_locations', location.toMap());
+  }
+
+  Future<List<CardLocation>> getLocationsForCard(String cardId) async {
+    final db = await database;
+    final maps = await db.query('card_locations', where: 'card_id = ?', whereArgs: [cardId]);
+    return maps.map((m) => CardLocation.fromMap(m)).toList();
+  }
+
+  Future<List<CardLocation>> getAllCardLocations() async {
+    final db = await database;
+    final maps = await db.query('card_locations');
+    return maps.map((m) => CardLocation.fromMap(m)).toList();
+  }
+
+  Future<void> deleteLocationsForCard(String cardId) async {
+    final db = await database;
+    await db.delete('card_locations', where: 'card_id = ?', whereArgs: [cardId]);
   }
 
   Future<void> close() async {
     final db = await database;
     db.close();
   }
-} 
+}

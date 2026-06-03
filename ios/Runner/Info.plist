@@ -41,6 +41,16 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Tesserotto usa la posizione per avvisarti quando sei vicino a un negozio con la tua tessera.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Tesserotto usa la posizione in background per avvisarti quando sei vicino a un negozio con la tua tessera.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Tesserotto usa la posizione in background per avvisarti quando sei vicino a un negozio con la tua tessera.</string>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>location</string>
+    </array>
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>

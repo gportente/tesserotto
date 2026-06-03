@@ -211,4 +211,40 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get pinnedToWidget => 'Tessera impostata come widget';
+
+  @override
+  String get storeLocations => 'Negozi';
+
+  @override
+  String get searchStorePlaceholder => 'Nome negozio (es. Esselunga)...';
+
+  @override
+  String get searchStoreButton => 'Cerca';
+
+  @override
+  String get noStoresFound => 'Nessun negozio trovato';
+
+  @override
+  String get storeSearchError => 'Errore nella ricerca';
+
+  @override
+  String get selectAll => 'Seleziona tutto';
+
+  @override
+  String get deselectAll => 'Deseleziona tutto';
+
+  @override
+  String storesAdded(int count) => '$count filiali aggiunte';
+
+  @override
+  String storesFound(int count) => '$count filiali trovate';
+
+  @override
+  String get confirmSelection => 'Conferma';
+
+  @override
+  String get locationPermissionDenied => 'Permesso posizione negato';
+
+  @override
+  String get geolocationStarted => 'Monitoraggio negozi attivato';
 }

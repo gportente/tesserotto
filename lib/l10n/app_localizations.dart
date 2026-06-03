@@ -490,6 +490,19 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Card set as widget'**
   String get pinnedToWidget;
+
+  String get storeLocations;
+  String get searchStorePlaceholder;
+  String get searchStoreButton;
+  String get noStoresFound;
+  String get storeSearchError;
+  String get selectAll;
+  String get deselectAll;
+  String storesAdded(int count);
+  String storesFound(int count);
+  String get confirmSelection;
+  String get locationPermissionDenied;
+  String get geolocationStarted;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

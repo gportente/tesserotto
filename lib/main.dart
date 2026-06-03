@@ -10,10 +10,12 @@ import 'screens/locale_changer.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'widgets/deep_link_handler.dart';
+import 'services/geolocation_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.database;
+  await GeolocationService.initNotifications();
   if (Platform.isIOS) {
     await HomeWidget.setAppGroupId('group.com.gportente.tesserotto');
   }

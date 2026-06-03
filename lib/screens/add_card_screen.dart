@@ -4,7 +4,10 @@ import 'package:uuid/uuid.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/fidelity_card.dart';
+import '../models/card_location.dart';
 import '../providers/fidelity_cards_provider.dart';
+import '../services/places_service.dart';
+import '../services/geolocation_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../widgets/card_gradient_header.dart';
@@ -24,11 +27,14 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _barcodeController = TextEditingController();
+  final _locationSearchController = TextEditingController();
   String? _barcode;
   String? _barcodeType;
   String? _barcodeError;
   int? _selectedColorValue;
   late bool _isScanning;
+  List<CardLocation> _selectedLocations = [];
+  bool _isSearchingLocations = false;
 
   static const _barcodeTypes = [
     'aztec',
@@ -119,6 +125,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
       _barcode = widget.cardToEdit!.barcode;
       _barcodeType = widget.cardToEdit!.barcodeType;
       _barcodeController.text = widget.cardToEdit!.barcode ?? '';
+      _selectedLocations = List.of(widget.cardToEdit!.locations);
       _validateCurrentBarcode();
     } else {
       _isScanning = true;
@@ -140,10 +147,11 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
     _nameController.dispose();
     _descriptionController.dispose();
     _barcodeController.dispose();
+    _locationSearchController.dispose();
     super.dispose();
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_barcode != null && _barcodeType != null && _barcodeError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -165,11 +173,132 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
         createdAt: widget.cardToEdit?.createdAt ?? DateTime.now(),
       );
       if (widget.cardToEdit != null) {
-        ref.read(fidelityCardsProvider.notifier).updateCard(card);
+        await ref.read(fidelityCardsProvider.notifier).updateCardWithLocations(card, _selectedLocations);
       } else {
-        ref.read(fidelityCardsProvider.notifier).addCard(card);
+        await ref.read(fidelityCardsProvider.notifier).addCardWithLocations(card, _selectedLocations);
       }
-      Navigator.pop(context);
+      if (_selectedLocations.isNotEmpty) {
+        await GeolocationService.instance.startMonitoring();
+      }
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
+  Future<void> _searchLocations() async {
+    final query = _locationSearchController.text.trim();
+    if (query.isEmpty) return;
+
+    setState(() => _isSearchingLocations = true);
+
+    try {
+      final results = await PlacesService.searchLocations(query, '');
+      if (!mounted) return;
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.noStoresFound)),
+        );
+        return;
+      }
+      await _showLocationsDialog(results);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${AppLocalizations.of(context)!.storeSearchError}: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSearchingLocations = false);
+    }
+  }
+
+  Future<void> _showLocationsDialog(List<CardLocation> results) async {
+    final loc = AppLocalizations.of(context)!;
+    final selected = <int>{};
+
+    final chosen = await showDialog<List<CardLocation>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(loc.storesFound(results.length),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 380,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => setDialogState(() {
+                          if (selected.length == results.length) {
+                            selected.clear();
+                          } else {
+                            selected.addAll(
+                                List.generate(results.length, (i) => i));
+                          }
+                        }),
+                        child: Text(selected.length == results.length
+                            ? loc.deselectAll
+                            : loc.selectAll),
+                      ),
+                      Text(
+                        '${selected.length} sel.',
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, i) {
+                        return CheckboxListTile(
+                          dense: true,
+                          value: selected.contains(i),
+                          onChanged: (v) => setDialogState(() {
+                            v! ? selected.add(i) : selected.remove(i);
+                          }),
+                          title: Text(results[i].address,
+                              style: GoogleFonts.poppins(fontSize: 13)),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.cancel),
+              ),
+              ElevatedButton(
+                onPressed: selected.isEmpty
+                    ? null
+                    : () => Navigator.pop(
+                        context, selected.map((i) => results[i]).toList()),
+                child: Text(loc.confirmSelection),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (chosen != null && chosen.isNotEmpty) {
+      setState(() => _selectedLocations = [
+            ..._selectedLocations,
+            ...chosen.where((l) =>
+                !_selectedLocations.any((e) => e.address == l.address)),
+          ]);
     }
   }
 
@@ -216,6 +345,115 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
       default:
         return 'qrCode';
     }
+  }
+
+  Widget _buildLocationSection(BuildContext context, Color cardColor) {
+    final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cardColor.withOpacity(0.2)),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, color: cardColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                loc.storeLocations,
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _locationSearchController,
+                  decoration: InputDecoration(
+                    hintText: loc.searchStorePlaceholder,
+                    hintStyle: GoogleFonts.poppins(fontSize: 13),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    isDense: true,
+                  ),
+                  style: GoogleFonts.poppins(fontSize: 13),
+                  onFieldSubmitted: (_) => _searchLocations(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 42,
+                child: ElevatedButton(
+                  onPressed:
+                      _isSearchingLocations ? null : _searchLocations,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cardColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    elevation: 0,
+                  ),
+                  child: _isSearchingLocations
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(loc.searchStoreButton,
+                          style: GoogleFonts.poppins(fontSize: 13)),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedLocations.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: _selectedLocations.map((l) {
+                return Chip(
+                  label: Text(
+                    l.address,
+                    style: GoogleFonts.poppins(fontSize: 11),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  labelPadding:
+                      const EdgeInsets.symmetric(horizontal: 4),
+                  deleteIcon:
+                      const Icon(Icons.close, size: 14),
+                  onDeleted: () => setState(() =>
+                      _selectedLocations.remove(l)),
+                  backgroundColor:
+                      cardColor.withOpacity(0.12),
+                  side: BorderSide.none,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              loc.storesAdded(_selectedLocations.length),
+              style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -545,6 +783,8 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                                   ],
                                 ),
                               ),
+                              const SizedBox(height: 18),
+                              _buildLocationSection(context, cardColor),
                               const SizedBox(height: 28),
                               ElevatedButton(
                                 onPressed: _submitForm,

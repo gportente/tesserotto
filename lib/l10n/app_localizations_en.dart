@@ -211,4 +211,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinnedToWidget => 'Card set as widget';
+
+  @override
+  String get storeLocations => 'Stores';
+
+  @override
+  String get searchStorePlaceholder => 'Store name (e.g. Tesco)...';
+
+  @override
+  String get searchStoreButton => 'Search';
+
+  @override
+  String get noStoresFound => 'No stores found';
+
+  @override
+  String get storeSearchError => 'Search error';
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get deselectAll => 'Deselect all';
+
+  @override
+  String storesAdded(int count) => '$count branches added';
+
+  @override
+  String storesFound(int count) => '$count branches found';
+
+  @override
+  String get confirmSelection => 'Confirm';
+
+  @override
+  String get locationPermissionDenied => 'Location permission denied';
+
+  @override
+  String get geolocationStarted => 'Store monitoring enabled';
 }
