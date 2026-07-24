@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
+/// Shared page route: a calm fade + short upward slide, tuned to the system's
+/// motion tokens (no bounce).
 class PageTransition extends PageRouteBuilder {
   final Widget page;
   final bool reverse;
@@ -8,30 +11,22 @@ class PageTransition extends PageRouteBuilder {
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 0.1);
-            const end = Offset.zero;
-            const curve = Curves.easeOutCubic;
+            final offsetAnimation = Tween<Offset>(
+              begin: const Offset(0.0, 0.06),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: AppCurves.out)).animate(animation);
 
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-
-            var fadeAnimation = Tween<double>(
-              begin: 0.0,
-              end: 1.0,
-            ).animate(CurvedAnimation(
+            final fadeAnimation = CurvedAnimation(
               parent: animation,
-              curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-            ));
+              curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+            );
 
             return FadeTransition(
               opacity: fadeAnimation,
-              child: SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              ),
+              child: SlideTransition(position: offsetAnimation, child: child),
             );
           },
-          transitionDuration: const Duration(milliseconds: 400),
-          reverseTransitionDuration: const Duration(milliseconds: 400),
+          transitionDuration: AppDuration.base,
+          reverseTransitionDuration: AppDuration.base,
         );
-} 
+}

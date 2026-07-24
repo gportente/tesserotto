@@ -1,12 +1,12 @@
 import 'package:fidelity_cards_manager/screens/add_card_screen.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 import '../widgets/card_gradient_header.dart';
 import '../widgets/page_transition.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models/fidelity_card.dart';
 import 'package:barcode_widget/barcode_widget.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../l10n/app_localizations.dart';
@@ -37,9 +37,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
 
   Future<void> _setMaxBrightness() async {
     try {
-      // Save current brightness
       _previousBrightness = await ScreenBrightness().current;
-      // Set brightness to maximum
       await ScreenBrightness().setScreenBrightness(1.0);
     } catch (e) {
       debugPrint('Failed to set brightness: $e');
@@ -61,7 +59,6 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
     _restoreBrightness();
     super.dispose();
   }
-
 
   bool _isValidBarcode(String data, String? type) {
     switch (type) {
@@ -104,7 +101,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
           const SizedBox(height: 8),
           Text(
             'Invalid for $type, shown as QR',
-            style: const TextStyle(color: Colors.red, fontSize: 13),
+            style: TextStyle(color: context.palette.danger, fontSize: 13),
           ),
         ],
       );
@@ -112,166 +109,143 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
     switch (type) {
       case 'qrCode':
         return QrImageView(
-          data: data,
-          version: QrVersions.auto,
-          size: 200.0,
-          backgroundColor: Colors.white,
-        );
+            data: data,
+            version: QrVersions.auto,
+            size: 200.0,
+            backgroundColor: Colors.white);
       case 'ean13':
         return BarcodeWidget(
-          barcode: Barcode.ean13(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.ean13(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'ean8':
         return BarcodeWidget(
-          barcode: Barcode.ean8(),
-          data: data,
-          width: 200,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.ean8(),
+            data: data,
+            width: 200,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'code128':
         return BarcodeWidget(
-          barcode: Barcode.code128(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.code128(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'code39':
         return BarcodeWidget(
-          barcode: Barcode.code39(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.code39(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'upcA':
         return BarcodeWidget(
-          barcode: Barcode.upcA(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.upcA(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'upcE':
         return BarcodeWidget(
-          barcode: Barcode.upcE(),
-          data: data,
-          width: 200,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.upcE(),
+            data: data,
+            width: 200,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'itf':
         return BarcodeWidget(
-          barcode: Barcode.itf(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.itf(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'pdf417':
         return BarcodeWidget(
-          barcode: Barcode.pdf417(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.pdf417(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'codabar':
         return BarcodeWidget(
-          barcode: Barcode.codabar(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.codabar(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'aztec':
-	  	return BarcodeWidget(
-          barcode: Barcode.aztec(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+        return BarcodeWidget(
+            barcode: Barcode.aztec(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'dataMatrix':
-	  	return BarcodeWidget(
-          barcode: Barcode.dataMatrix(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+        return BarcodeWidget(
+            barcode: Barcode.dataMatrix(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       case 'code93':
         return BarcodeWidget(
-          barcode: Barcode.code93(),
-          data: data,
-          width: 250,
-          height: 80,
-          backgroundColor: Colors.white,
-        );
+            barcode: Barcode.code93(),
+            data: data,
+            width: 250,
+            height: 80,
+            backgroundColor: Colors.white);
       default:
         return QrImageView(
-          data: data,
-          version: QrVersions.auto,
-          size: 200.0,
-          backgroundColor: Colors.white,
-        );
+            data: data,
+            version: QrVersions.auto,
+            size: 200.0,
+            backgroundColor: Colors.white);
     }
   }
 
   void _showQrShareSheet(BuildContext context) {
     final shareUrl = DeepLinkService.generateDeepLink(card);
-    final cardColor = card.colorValue != null ? Color(card.colorValue!) : cardColorFromName(card.name);
+    final cardColor = card.colorValue != null
+        ? Color(card.colorValue!)
+        : cardColorFromName(card.name);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxl, AppSpacing.lg, AppSpacing.xxl, AppSpacing.xxxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 40,
               height: 4,
-              margin: const EdgeInsets.only(bottom: 24),
+              margin: const EdgeInsets.only(bottom: AppSpacing.xxl),
               decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outlineVariant,
+                  color: context.palette.hairline,
                   borderRadius: BorderRadius.circular(2)),
             ),
             Text(card.name,
-                style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: cardColor)),
-            const SizedBox(height: 24),
+                style: context.text.headlineSmall?.copyWith(color: cardColor)),
+            const SizedBox(height: AppSpacing.xxl),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4))
-                  ]),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
               child: QrImageView(
                   data: shareUrl,
                   version: QrVersions.auto,
                   size: 240.0,
                   backgroundColor: Colors.white),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             Text(AppLocalizations.of(context)!.shareViaQr,
-                style: GoogleFonts.poppins(
-                    fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            const SizedBox(height: 8),
+                style: context.text.bodyMedium),
           ],
         ),
       ),
@@ -280,36 +254,36 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final loc = AppLocalizations.of(context)!;
     final cards = ref.watch(fidelityCardsProvider);
-    // Aggiorna la card se è cambiata nel provider
     final updated = cards.firstWhere((c) => c.id == card.id, orElse: () => card);
     card = updated;
-    final theme = Theme.of(context);
     final cardColor = card.colorValue != null
         ? Color(card.colorValue!)
         : cardColorFromName(card.name);
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: cardColor,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        elevation: 0,
-        //title: Text(AppLocalizations.of(context)!.cardInfo),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
-            tooltip: AppLocalizations.of(context)!.shareViaLink,
+            icon: const Icon(Icons.ios_share_rounded),
+            tooltip: loc.shareViaLink,
             onPressed: () {
               final deepLink = DeepLinkService.generateDeepLink(card);
               Share.share(
-                '${AppLocalizations.of(context)!.shareCardMessage}\n\n🔗 $deepLink',
+                '${loc.shareCardMessage}\n\n🔗 $deepLink',
                 subject: card.name,
               );
             },
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: AppLocalizations.of(context)!.editCard,
+            tooltip: loc.editCard,
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -319,13 +293,13 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             },
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            color: Theme.of(context).colorScheme.surface,
+            icon: const Icon(Icons.more_vert_rounded),
             onSelected: (value) async {
-              final loc = AppLocalizations.of(context)!;
               switch (value) {
                 case 'favorite':
-                  ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
+                  ref
+                      .read(fidelityCardsProvider.notifier)
+                      .toggleFavorite(card.id);
                 case 'qr':
                   _showQrShareSheet(context);
                 case 'widget':
@@ -344,21 +318,38 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                     ),
                   );
                   if (confirm == true) {
-                    ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
+                    ref
+                        .read(fidelityCardsProvider.notifier)
+                        .removeCard(card.id);
                     if (mounted) Navigator.pop(context);
                   }
               }
             },
-            itemBuilder: (context) {
-              final loc = AppLocalizations.of(context)!;
-              return [
-                PopupMenuItem(value: 'favorite', child: ListTile(leading: Icon(card.isFavorite ? Icons.star_rounded : Icons.star_border_rounded), title: Text(card.isFavorite ? loc.removeFromFavorites : loc.addToFavorites), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
-                PopupMenuItem(value: 'qr', child: ListTile(leading: const Icon(Icons.qr_code), title: Text(loc.shareViaQr), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
-                PopupMenuItem(value: 'widget', child: ListTile(leading: const Icon(Icons.widgets_outlined), title: Text(loc.pinToWidget), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
-                const PopupMenuDivider(),
-                PopupMenuItem(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline, color: Colors.red), title: Text(loc.deleteCard, style: const TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero, visualDensity: VisualDensity.compact)),
-              ];
-            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'favorite',
+                child: _menuRow(
+                  card.isFavorite
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  card.isFavorite ? loc.removeFromFavorites : loc.addToFavorites,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'qr',
+                child: _menuRow(Icons.qr_code_rounded, loc.shareViaQr),
+              ),
+              PopupMenuItem(
+                value: 'widget',
+                child: _menuRow(Icons.widgets_outlined, loc.pinToWidget),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'delete',
+                child: _menuRow(Icons.delete_outline_rounded, loc.deleteCard,
+                    color: p.danger),
+              ),
+            ],
           ),
         ],
       ),
@@ -368,62 +359,22 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             cardColor: cardColor,
             title: card.name,
             watermarkChar: card.name.isNotEmpty ? card.name[0].toUpperCase() : '?',
-            height: 140,
-            titleFontSize: 32,
-            watermarkFontSize: 110,
+            height: 190,
+            titleFontSize: 30,
+            watermarkFontSize: 170,
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(AppSpacing.xxl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (card.description.isNotEmpty) ...[
-                    Text(
-                      card.description,
-                      style: GoogleFonts.poppins(fontSize: 18, color: theme.colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: 24),
+                    Text(card.description, style: context.text.bodyLarge),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
-                  if (card.barcode != null) ...[
-                    Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      color: theme.colorScheme.surface,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.barcode,
-                              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: _buildBarcodeWidget(card.barcode!, card.barcodeType),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              card.barcode!,
-                              style: GoogleFonts.poppins(fontSize: 16, color: theme.colorScheme.onSurface),
-                            ),
-                            if (card.barcodeType != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'Type: ${card.barcodeType}',
-                                style: GoogleFonts.poppins(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  if (card.barcode != null)
+                    _barcodeTicket(context, loc, p, cardColor),
                 ],
               ),
             ),
@@ -432,4 +383,57 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
       ),
     );
   }
-} 
+
+  Widget _barcodeTicket(BuildContext context, AppLocalizations loc,
+      AppPalette p, Color cardColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: p.hairline),
+        boxShadow: AppShadow.soft(p),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.storefront_rounded, size: 18, color: cardColor),
+              const SizedBox(width: AppSpacing.sm),
+              Text(loc.barcode, style: context.text.titleMedium),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: _buildBarcodeWidget(card.barcode!, card.barcodeType),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            card.barcode!,
+            style: context.text.titleMedium?.copyWith(
+              letterSpacing: 2,
+              fontFeatures: const [],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuRow(IconData icon, String label, {Color? color}) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: AppSpacing.md),
+        Text(label, style: color != null ? TextStyle(color: color) : null),
+      ],
+    );
+  }
+}

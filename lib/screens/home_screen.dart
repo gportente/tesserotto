@@ -12,6 +12,7 @@ import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 import '../services/home_widget_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -27,278 +28,364 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final loc = AppLocalizations.of(context)!;
     final cards = ref.watch(fidelityCardsProvider);
+
     List<FidelityCard> filteredCards = (_search.isEmpty
-        ? cards
-        : cards.where((c) {
-            final q = _search.toLowerCase();
-            return c.name.toLowerCase().contains(q) ||
-                   c.description.toLowerCase().contains(q);
-          }))
-      .whereType<FidelityCard>()
-      .toList();
+            ? cards
+            : cards.where((c) {
+                final q = _search.toLowerCase();
+                return c.name.toLowerCase().contains(q) ||
+                    c.description.toLowerCase().contains(q);
+              }))
+        .whereType<FidelityCard>()
+        .toList();
     filteredCards.sort((a, b) {
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
-      if (_sort == 'name') return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      if (_sort == 'name') {
+        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
       return b.openCount.compareTo(a.openCount);
     });
 
+    final isSearching = cards.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.appTitle),
+        titleSpacing: AppSpacing.xl,
+        title: Text(loc.appTitle),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const SizedBox(height: 32),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: Text(AppLocalizations.of(context)!.settings),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    page: const SettingsScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-							leading: const Icon(Icons.import_export),
-							title: Text(AppLocalizations.of(context)!.importExport),
-							onTap: () {
-								Navigator.push(
-									context,
-									PageTransition(
-										page: const ImportExportScreen(),
-									),
-								);
-							},
-						),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(context, loc, p),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Material(
-                    elevation: 2,
-                    borderRadius: BorderRadius.circular(30),
-                    color: Colors.transparent,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.searchHint,
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _search.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  setState(() {
-                                    _search = '';
-                                  });
-                                },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _search = value;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.sort),
-                  onSelected: (value) {
-                    setState(() {
-                      _sort = value;
-                    });
-                  },
-                  itemBuilder: (context) => [
-                    CheckedPopupMenuItem(
-                      value: 'name',
-                      checked: _sort == 'name',
-                      child: Text(AppLocalizations.of(context)!.sortAZ),
-                    ),
-                    CheckedPopupMenuItem(
-                      value: 'openCount',
-                      checked: _sort == 'openCount',
-                      child: Text(AppLocalizations.of(context)!.sortMostOpened),
-                    ),
-                  ],
-                ),
-              ],
+          if (isSearching)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(child: _searchField(loc, p)),
+                  const SizedBox(width: AppSpacing.sm),
+                  _sortButton(loc, p),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: filteredCards.isEmpty
-                ? Padding(
-									padding: EdgeInsets.only(left: 15, right: 15),
-									child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 240,
-                        child: SvgPicture.asset(
-                          'assets/empty_cards.svg',
-                          semanticsLabel: 'No cards',
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        AppLocalizations.of(context)!.noCards,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-								)
-                : Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.3,
-                      ),
-                      itemCount: filteredCards.length,
-                      itemBuilder: (context, index) {
-                        final card = filteredCards[index];
-                        final cardColor = card.colorValue != null
-                            ? Color(card.colorValue!)
-                            : cardColorFromName(card.name);
-                        return AnimatedCard(
-                          card: card,
-                          cardColor: cardColor,
-                          onTap: () async {
-                            await ref.read(fidelityCardsProvider.notifier).incrementOpenCount(card.id);
-                            Navigator.push(
-                              context,
-                              PageTransition(
-                                page: CardDetailsScreen(card: card),
-                              ),
-                            );
-                          },
-                          onLongPress: () async {
-                            final loc = AppLocalizations.of(context)!;
-                            await showModalBottomSheet(
-                              context: context,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                              ),
-                              builder: (ctx) => SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      width: 40,
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(ctx).colorScheme.outlineVariant,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ListTile(
-                                      leading: Icon(
-                                        card.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                                        color: Theme.of(ctx).colorScheme.primary,
-                                      ),
-                                      title: Text(card.isFavorite ? loc.removeFromFavorites : loc.addToFavorites),
-                                      onTap: () {
-                                        Navigator.pop(ctx);
-                                        ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: Icon(Icons.widgets_outlined, color: Theme.of(ctx).colorScheme.primary),
-                                      title: Text(loc.pinToWidget),
-                                      onTap: () async {
-                                        Navigator.pop(ctx);
-                                        await HomeWidgetService.pinCard(card);
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text(loc.pinnedToWidget)),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.delete_outline, color: Colors.red),
-                                      title: Text(loc.deleteCardAction, style: const TextStyle(color: Colors.red)),
-                                      onTap: () async {
-                                        Navigator.pop(ctx);
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) => DeleteCardDialog(
-                                            cardName: card.name,
-                                            loc: AppLocalizations.of(context)!,
-                                          ),
-                                        );
-                                        if (confirm == true) {
-                                          ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(height: 8),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                ? (_search.isEmpty
+                    ? _emptyState(context, loc, p)
+                    : _noResults(loc, p))
+                : GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
+                        AppSpacing.xs, AppSpacing.lg, 100),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: AppSpacing.md,
+                      mainAxisSpacing: AppSpacing.md,
+                      childAspectRatio: 1.42,
                     ),
+                    itemCount: filteredCards.length,
+                    itemBuilder: (context, index) {
+                      final card = filteredCards[index];
+                      final cardColor = card.colorValue != null
+                          ? Color(card.colorValue!)
+                          : cardColorFromName(card.name);
+                      return AnimatedCard(
+                        card: card,
+                        cardColor: cardColor,
+                        onTap: () async {
+                          await ref
+                              .read(fidelityCardsProvider.notifier)
+                              .incrementOpenCount(card.id);
+                          if (!context.mounted) return;
+                          Navigator.push(
+                            context,
+                            PageTransition(page: CardDetailsScreen(card: card)),
+                          );
+                        },
+                        onLongPress: () => _showCardActions(context, card, loc),
+                      );
+                    },
                   ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            PageTransition(
-              page: const AddCardScreen(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.push(
+          context,
+          PageTransition(page: const AddCardScreen()),
+        ),
+        icon: const Icon(Icons.add_rounded),
+        label: Text(loc.addCard),
+      ),
+    );
+  }
+
+  Widget _searchField(AppLocalizations loc, AppPalette p) {
+    return TextField(
+      textInputAction: TextInputAction.search,
+      style: context.text.bodyLarge,
+      decoration: InputDecoration(
+        hintText: loc.searchHint,
+        prefixIcon: Icon(Icons.search_rounded, color: p.inkFaint),
+        suffixIcon: _search.isNotEmpty
+            ? IconButton(
+                icon: Icon(Icons.close_rounded, color: p.inkSoft),
+                onPressed: () => setState(() => _search = ''),
+              )
+            : null,
+        filled: true,
+        fillColor: p.surfaceMuted,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide(color: p.accent, width: 1.5),
+        ),
+      ),
+      onChanged: (value) => setState(() => _search = value),
+    );
+  }
+
+  Widget _sortButton(AppLocalizations loc, AppPalette p) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: p.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: PopupMenuButton<String>(
+        icon: Icon(Icons.sort_rounded, color: p.ink),
+        tooltip: loc.sortAZ,
+        onSelected: (value) => setState(() => _sort = value),
+        itemBuilder: (context) => [
+          CheckedPopupMenuItem(
+            value: 'name',
+            checked: _sort == 'name',
+            child: Text(loc.sortAZ),
+          ),
+          CheckedPopupMenuItem(
+            value: 'openCount',
+            checked: _sort == 'openCount',
+            child: Text(loc.sortMostOpened),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState(BuildContext context, AppLocalizations loc, AppPalette p) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 200,
+              child: SvgPicture.asset('assets/empty_cards.svg',
+                  semanticsLabel: 'No cards'),
             ),
-          );
-        },
-        tooltip: 'Add Card',
-        child: const Icon(Icons.add_rounded),
+            const SizedBox(height: AppSpacing.xxl),
+            Text(
+              loc.noCards,
+              style: context.text.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                PageTransition(page: const AddCardScreen()),
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(loc.addCard),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _noResults(AppLocalizations loc, AppPalette p) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off_rounded, size: 56, color: p.inkFaint),
+          const SizedBox(height: AppSpacing.lg),
+          Text(loc.noCards,
+              style: context.text.titleMedium?.copyWith(color: p.inkSoft)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, AppLocalizations loc, AppPalette p) {
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xxl,
+                  AppSpacing.xl, AppSpacing.xl),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: p.accentSoft,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: Icon(Icons.wallet_rounded, color: p.accent),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Text(loc.appTitle, style: context.text.titleLarge),
+                ],
+              ),
+            ),
+            Divider(color: p.hairline, indent: AppSpacing.xl, endIndent: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.sm),
+            _drawerItem(
+              icon: Icons.settings_outlined,
+              label: loc.settings,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context, PageTransition(page: const SettingsScreen()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.sync_alt_rounded,
+              label: loc.importExport,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context, PageTransition(page: const ImportExportScreen()));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _drawerItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(label),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      ),
+    );
+  }
+
+  Future<void> _showCardActions(
+      BuildContext context, FidelityCard card, AppLocalizations loc) async {
+    final p = context.palette;
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: p.hairline,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xxl, AppSpacing.md, AppSpacing.xxl, AppSpacing.xs),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(card.name, style: context.text.titleMedium),
+              ),
+            ),
+            ListTile(
+              leading: Icon(
+                card.isFavorite
+                    ? Icons.star_rounded
+                    : Icons.star_border_rounded,
+                color: p.star,
+              ),
+              title: Text(card.isFavorite
+                  ? loc.removeFromFavorites
+                  : loc.addToFavorites),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.widgets_outlined, color: p.inkSoft),
+              title: Text(loc.pinToWidget),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await HomeWidgetService.pinCard(card);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(loc.pinnedToWidget)),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline_rounded, color: p.danger),
+              title: Text(loc.deleteCardAction,
+                  style: TextStyle(color: p.danger)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => DeleteCardDialog(
+                    cardName: card.name,
+                    loc: AppLocalizations.of(context)!,
+                  ),
+                );
+                if (confirm == true) {
+                  ref
+                      .read(fidelityCardsProvider.notifier)
+                      .removeCard(card.id);
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
       ),
     );
   }
 }
- 
