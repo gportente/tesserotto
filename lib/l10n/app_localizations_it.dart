@@ -229,4 +229,37 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get optional => 'facoltativo';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Sistema';
+
+  @override
+  String get themeLight => 'Chiaro';
+
+  @override
+  String get themeDark => 'Scuro';
+
+  @override
+  String get autoBrightness => 'Luminosità massima';
+
+  @override
+  String get autoBrightnessSubtitle => 'Aumenta la luminosità quando apri una tessera';
+
+  @override
+  String get about => 'Informazioni';
+
+  @override
+  String get version => 'Versione';
+
+  @override
+  String get licenses => 'Licenze open source';
+
+  @override
+  String get sourceCode => 'Codice sorgente';
+
+  @override
+  String get copied => 'Copiato negli appunti';
 }

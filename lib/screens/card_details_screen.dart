@@ -9,6 +9,7 @@ import '../models/fidelity_card.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/fidelity_cards_provider.dart';
+import '../providers/settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import 'package:screen_brightness/screen_brightness.dart';
@@ -28,24 +29,29 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
   late FidelityCard card;
   double? _previousBrightness;
 
+  bool _brightnessBoosted = false;
+
   @override
   void initState() {
     super.initState();
     card = widget.card;
-    _setMaxBrightness();
+    if (ref.read(settingsProvider).autoBrightness) {
+      _setMaxBrightness();
+    }
   }
 
   Future<void> _setMaxBrightness() async {
     try {
       _previousBrightness = await ScreenBrightness().current;
       await ScreenBrightness().setScreenBrightness(1.0);
+      _brightnessBoosted = true;
     } catch (e) {
       debugPrint('Failed to set brightness: $e');
     }
   }
 
   Future<void> _restoreBrightness() async {
-    if (_previousBrightness != null) {
+    if (_brightnessBoosted && _previousBrightness != null) {
       try {
         await ScreenBrightness().setScreenBrightness(_previousBrightness!);
       } catch (e) {

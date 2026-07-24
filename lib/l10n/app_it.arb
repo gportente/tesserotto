@@ -86,5 +86,16 @@
   "advancedOptions": "Opzioni avanzate",
   "codeCaptured": "Codice acquisito",
   "nameRequired": "Inserisci un nome",
-  "optional": "facoltativo"
+  "optional": "facoltativo",
+  "theme": "Tema",
+  "themeSystem": "Sistema",
+  "themeLight": "Chiaro",
+  "themeDark": "Scuro",
+  "autoBrightness": "Luminosità massima",
+  "autoBrightnessSubtitle": "Aumenta la luminosità quando apri una tessera",
+  "about": "Informazioni",
+  "version": "Versione",
+  "licenses": "Licenze open source",
+  "sourceCode": "Codice sorgente",
+  "copied": "Copiato negli appunti"
 } 

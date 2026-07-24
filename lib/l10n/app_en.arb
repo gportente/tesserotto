@@ -85,5 +85,16 @@
   "advancedOptions": "Advanced options",
   "codeCaptured": "Code captured",
   "nameRequired": "Please enter a name",
-  "optional": "optional"
+  "optional": "optional",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "autoBrightness": "Maximum brightness",
+  "autoBrightnessSubtitle": "Increase brightness when opening a card",
+  "about": "About",
+  "version": "Version",
+  "licenses": "Open source licenses",
+  "sourceCode": "Source code",
+  "copied": "Copied to clipboard"
 } 

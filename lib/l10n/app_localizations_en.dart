@@ -229,4 +229,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get optional => 'optional';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get autoBrightness => 'Maximum brightness';
+
+  @override
+  String get autoBrightnessSubtitle => 'Increase brightness when opening a card';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get licenses => 'Open source licenses';
+
+  @override
+  String get sourceCode => 'Source code';
+
+  @override
+  String get copied => 'Copied to clipboard';
 }

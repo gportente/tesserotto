@@ -13,6 +13,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/delete_card_dialog.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../providers/settings_provider.dart';
 import '../services/home_widget_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,13 +25,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _search = '';
-  String _sort = 'name'; // 'name' or 'openCount'
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final loc = AppLocalizations.of(context)!;
     final cards = ref.watch(fidelityCardsProvider);
+    final sort = ref.watch(settingsProvider).defaultSort;
 
     List<FidelityCard> filteredCards = (_search.isEmpty
             ? cards
@@ -44,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     filteredCards.sort((a, b) {
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
-      if (_sort == 'name') {
+      if (sort == 'name') {
         return a.name.toLowerCase().compareTo(b.name.toLowerCase());
       }
       return b.openCount.compareTo(a.openCount);
@@ -75,7 +76,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Expanded(child: _searchField(loc, p)),
                   const SizedBox(width: AppSpacing.sm),
-                  _sortButton(loc, p),
+                  _sortButton(loc, p, sort),
                 ],
               ),
             ),
@@ -164,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _sortButton(AppLocalizations loc, AppPalette p) {
+  Widget _sortButton(AppLocalizations loc, AppPalette p, String sort) {
     return Container(
       width: 52,
       height: 52,
@@ -175,16 +176,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: PopupMenuButton<String>(
         icon: Icon(Icons.sort_rounded, color: p.ink),
         tooltip: loc.sortAZ,
-        onSelected: (value) => setState(() => _sort = value),
+        onSelected: (value) =>
+            ref.read(settingsProvider.notifier).setDefaultSort(value),
         itemBuilder: (context) => [
           CheckedPopupMenuItem(
             value: 'name',
-            checked: _sort == 'name',
+            checked: sort == 'name',
             child: Text(loc.sortAZ),
           ),
           CheckedPopupMenuItem(
             value: 'openCount',
-            checked: _sort == 'openCount',
+            checked: sort == 'openCount',
             child: Text(loc.sortMostOpened),
           ),
         ],
