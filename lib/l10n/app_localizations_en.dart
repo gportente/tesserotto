@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
-  String get deleteCardTitle => 'Delete Cardx2';
+  String get deleteCardTitle => 'Delete Card';
 
   @override
   String deleteCardMessage(Object cardName) {
@@ -211,4 +211,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinnedToWidget => 'Card set as widget';
+
+  @override
+  String get scanBarcode => 'Scan the barcode';
+
+  @override
+  String get enterManually => 'Enter manually';
+
+  @override
+  String get advancedOptions => 'Advanced options';
+
+  @override
+  String get codeCaptured => 'Code captured';
+
+  @override
+  String get nameRequired => 'Please enter a name';
+
+  @override
+  String get optional => 'optional';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get autoBrightness => 'Maximum brightness';
+
+  @override
+  String get autoBrightnessSubtitle => 'Increase brightness when opening a card';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get licenses => 'Open source licenses';
+
+  @override
+  String get sourceCode => 'Source code';
+
+  @override
+  String get copied => 'Copied to clipboard';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get cardDeleted => 'Card deleted';
+
+  @override
+  String get fromImage => 'From image';
+
+  @override
+  String get noCodeFound => 'No code found in the image';
 }

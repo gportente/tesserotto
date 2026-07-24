@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
+/// Warm gradient banner shown at the top of the card detail / add screens.
+/// Mirrors the wallet-card language: soft gradient, monogram watermark,
+/// title anchored bottom-left.
 class CardGradientHeader extends StatelessWidget {
   final Color cardColor;
   final String title;
@@ -14,9 +18,9 @@ class CardGradientHeader extends StatelessWidget {
     required this.cardColor,
     required this.title,
     required this.watermarkChar,
-    this.height = 120,
+    this.height = 150,
     this.titleFontSize = 28,
-    this.watermarkFontSize = 100,
+    this.watermarkFontSize = 150,
   });
 
   @override
@@ -24,45 +28,46 @@ class CardGradientHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: height,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [cardColor, cardColor.withOpacity(0.7)],
+          colors: [cardColorLight(cardColor), cardColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(36),
-          bottomRight: Radius.circular(36),
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppRadius.xxl),
         ),
       ),
       child: Stack(
         children: [
           Positioned(
-            left: 32,
-            top: 0,
-            bottom: 0,
-            child: Opacity(
-              opacity: 0.10,
-              child: Text(
-                watermarkChar,
-                style: TextStyle(
-                  fontSize: watermarkFontSize,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -8,
-                  color: Colors.white.withOpacity(0.15),
-                ),
+            right: -16,
+            bottom: -40,
+            child: Text(
+              watermarkChar,
+              style: TextStyle(
+                fontSize: watermarkFontSize,
+                fontWeight: FontWeight.w800,
+                height: 1,
+                color: Colors.white.withOpacity(0.13),
               ),
             ),
           ),
-          Center(
+          Positioned(
+            left: AppSpacing.xxl,
+            right: AppSpacing.xxl,
+            bottom: AppSpacing.xl,
             child: Text(
               title,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: titleFontSize,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

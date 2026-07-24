@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import 'database/database_helper.dart';
@@ -9,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'screens/locale_changer.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
 import 'widgets/deep_link_handler.dart';
 
 void main() async {
@@ -25,39 +25,13 @@ class FidelityCardsApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = ColorScheme.fromSeed(seedColor: Colors.indigo);
     final settings = ref.watch(settingsProvider);
-    
+
     return DeepLinkHandler(
       child: MaterialApp(
         title: AppLocalizations.of(context)?.appTitle ?? 'Tesserotto',
-        theme: ThemeData(
-          colorScheme: colorScheme,
-          useMaterial3: true,
-          textTheme: GoogleFonts.poppinsTextTheme(),
-          appBarTheme: const AppBarTheme(
-            elevation: 4,
-            centerTitle: true,
-            shadowColor: Colors.black26,
-          ),
-          scaffoldBackgroundColor: colorScheme.surface,
-          fontFamily: GoogleFonts.poppins().fontFamily,
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.indigo,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          textTheme: GoogleFonts.poppinsTextTheme(ThemeData(brightness: Brightness.dark).textTheme),
-          appBarTheme: const AppBarTheme(
-            elevation: 4,
-            centerTitle: true,
-            shadowColor: Colors.black54,
-          ),
-          scaffoldBackgroundColor: const Color(0xFF181A20),
-          fontFamily: GoogleFonts.poppins().fontFamily,
-        ),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
         themeMode: settings.themeMode,
         locale: settings.locale,
         supportedLocales: const [

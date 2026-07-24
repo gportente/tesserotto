@@ -242,7 +242,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteCardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete Cardx2'**
+  /// **'Delete Card'**
   String get deleteCardTitle;
 
   /// No description provided for @deleteCardMessage.
@@ -490,6 +490,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Card set as widget'**
   String get pinnedToWidget;
+
+  /// No description provided for @scanBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the barcode'**
+  String get scanBarcode;
+
+  /// No description provided for @enterManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter manually'**
+  String get enterManually;
+
+  /// No description provided for @advancedOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced options'**
+  String get advancedOptions;
+
+  /// No description provided for @codeCaptured.
+  ///
+  /// In en, this message translates to:
+  /// **'Code captured'**
+  String get codeCaptured;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name'**
+  String get nameRequired;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'optional'**
+  String get optional;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @autoBrightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum brightness'**
+  String get autoBrightness;
+
+  /// No description provided for @autoBrightnessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase brightness when opening a card'**
+  String get autoBrightnessSubtitle;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @licenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open source licenses'**
+  String get licenses;
+
+  /// No description provided for @sourceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code'**
+  String get sourceCode;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copied;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @cardDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Card deleted'**
+  String get cardDeleted;
+
+  /// No description provided for @fromImage.
+  ///
+  /// In en, this message translates to:
+  /// **'From image'**
+  String get fromImage;
+
+  /// No description provided for @noCodeFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No code found in the image'**
+  String get noCodeFound;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
