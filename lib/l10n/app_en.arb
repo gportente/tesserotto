@@ -79,5 +79,11 @@
   "removeFromFavorites": "Remove from favorites",
   "deleteCardAction": "Delete card",
   "pinToWidget": "Set as home screen widget",
-  "pinnedToWidget": "Card set as widget"
+  "pinnedToWidget": "Card set as widget",
+  "scanBarcode": "Scan the barcode",
+  "enterManually": "Enter manually",
+  "advancedOptions": "Advanced options",
+  "codeCaptured": "Code captured",
+  "nameRequired": "Please enter a name",
+  "optional": "optional"
 } 

@@ -28,7 +28,9 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   String? _barcodeType;
   String? _barcodeError;
   int? _selectedColorValue;
-  late bool _isScanning;
+  bool _isScanning = false;
+  bool _manualEntry = false;
+  bool _showAdvanced = false;
 
   static const _barcodeTypes = [
     'aztec',
@@ -47,6 +49,8 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   ];
 
   static const _colorPalette = kCardPalette;
+
+  bool get _hasCode => _barcode != null && _barcode!.isNotEmpty;
 
   bool _validateBarcode(String value, String type) {
     if (value.isEmpty) return true;
@@ -111,8 +115,9 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   @override
   void initState() {
     super.initState();
+    // Form-first: never ambush the user with the camera. Scanning is an
+    // explicit choice from within the form.
     if (widget.cardToEdit != null) {
-      _isScanning = false;
       _nameController.text = widget.cardToEdit!.name;
       _descriptionController.text = widget.cardToEdit!.description;
       _selectedColorValue =
@@ -121,18 +126,16 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
       _barcodeType = widget.cardToEdit!.barcodeType;
       _barcodeController.text = widget.cardToEdit!.barcode ?? '';
       _validateCurrentBarcode();
-    } else {
-      _isScanning = true;
     }
   }
 
   void _validateCurrentBarcode() {
     if (_barcodeType != null && _barcode != null) {
-      if (!_validateBarcode(_barcode!, _barcodeType!)) {
-        _barcodeError = _getBarcodeErrorMessage(_barcode!, _barcodeType!);
-      } else {
-        _barcodeError = null;
-      }
+      _barcodeError = _validateBarcode(_barcode!, _barcodeType!)
+          ? null
+          : _getBarcodeErrorMessage(_barcode!, _barcodeType!);
+    } else {
+      _barcodeError = null;
     }
   }
 
@@ -146,7 +149,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      if (_barcode != null && _barcodeType != null && _barcodeError != null) {
+      if (_hasCode && _barcodeType != null && _barcodeError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_barcodeError!),
@@ -159,10 +162,10 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
           (List.of(_colorPalette)..shuffle()).first.value;
       final card = FidelityCard(
         id: widget.cardToEdit?.id ?? const Uuid().v4(),
-        name: _nameController.text,
-        description: _descriptionController.text,
-        barcode: _barcode,
-        barcodeType: _barcodeType,
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        barcode: _hasCode ? _barcode : null,
+        barcodeType: _hasCode ? _barcodeType : null,
         colorValue: colorValue,
         createdAt: widget.cardToEdit?.createdAt ?? DateTime.now(),
       );
@@ -175,7 +178,11 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
     }
   }
 
-  void _startScanning() => setState(() => _isScanning = true);
+  void _startScanning() {
+    FocusScope.of(context).unfocus();
+    setState(() => _isScanning = true);
+  }
+
   void _stopScanning() => setState(() => _isScanning = false);
 
   String mapBarcodeFormatToType(BarcodeFormat format) {
@@ -215,17 +222,20 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final loc = AppLocalizations.of(context)!;
-    final cardColor =
-        _selectedColorValue != null ? Color(_selectedColorValue!) : _colorPalette[0];
+    final cardColor = _selectedColorValue != null
+        ? Color(_selectedColorValue!)
+        : _colorPalette[0];
+
+    if (_isScanning) {
+      return Scaffold(body: _scannerView(loc, cardColor));
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            widget.cardToEdit != null ? loc.editCard : loc.addCard),
+        title: Text(widget.cardToEdit != null ? loc.editCard : loc.addCard),
       ),
-      body: _isScanning
-          ? _scannerView(loc, cardColor)
-          : _formView(context, loc, p, cardColor),
+      body: _formView(context, loc, p, cardColor),
+      bottomNavigationBar: _saveBar(context, loc, cardColor),
     );
   }
 
@@ -244,13 +254,13 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                 _barcode = value;
                 _barcodeType = mapBarcodeFormatToType(format);
                 _barcodeController.text = value;
+                _manualEntry = true;
                 _isScanning = false;
                 _validateCurrentBarcode();
               });
             }
           },
         ),
-        // Viewfinder + hint.
         Center(
           child: Container(
             width: 260,
@@ -279,7 +289,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                   const Icon(Icons.qr_code_scanner_rounded,
                       color: Colors.white, size: 18),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(loc.scan,
+                  Text(loc.scanBarcode,
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w600)),
                 ],
@@ -299,12 +309,38 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                 foregroundColor: Colors.black87,
                 minimumSize: const Size(double.infinity, 52),
               ),
-              icon: const Icon(Icons.edit_rounded),
-              label: Text(loc.cancelScanning),
+              icon: const Icon(Icons.close_rounded),
+              label: Text(loc.cancel),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  // ── Sticky save bar ─────────────────────────────────────────────────────────
+  Widget _saveBar(BuildContext context, AppLocalizations loc, Color cardColor) {
+    final p = context.palette;
+    return Container(
+      decoration: BoxDecoration(
+        color: p.paper,
+        border: Border(top: BorderSide(color: p.hairline)),
+      ),
+      child: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.md),
+        child: ElevatedButton.icon(
+          onPressed: _submitForm,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: cardColor,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+          ),
+          icon: const Icon(Icons.check_rounded),
+          label: Text(
+              widget.cardToEdit != null ? loc.saveChanges : loc.addCard),
+        ),
+      ),
     );
   }
 
@@ -322,7 +358,7 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
             watermarkChar: _nameController.text.isNotEmpty
                 ? _nameController.text[0].toUpperCase()
                 : '?',
-            height: 150,
+            height: 140,
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
@@ -334,39 +370,32 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
                   _sectionLabel(context, loc.cardName),
                   TextFormField(
                     controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
                     decoration: InputDecoration(hintText: loc.cardName),
                     style: context.text.bodyLarge
                         ?.copyWith(fontWeight: FontWeight.w600),
-                    validator: (value) =>
-                        (value == null || value.isEmpty) ? loc.cardName : null,
+                    validator: (value) => (value == null || value.trim().isEmpty)
+                        ? loc.nameRequired
+                        : null,
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  _sectionLabel(context, loc.description),
+
+                  _sectionLabel(context, loc.barcode),
+                  _codeSection(context, loc, p, cardColor),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  _sectionLabel(context, loc.description, optional: loc.optional),
                   TextFormField(
                     controller: _descriptionController,
                     decoration: InputDecoration(hintText: loc.description),
-                    maxLines: 3,
+                    maxLines: 2,
                     style: context.text.bodyLarge,
                   ),
                   const SizedBox(height: AppSpacing.xl),
+
                   _sectionLabel(context, loc.cardColor),
                   _colorPicker(context, p),
-                  const SizedBox(height: AppSpacing.xl),
-                  _sectionLabel(context, loc.barcode),
-                  _barcodeSection(context, loc, p, cardColor),
-                  const SizedBox(height: AppSpacing.xxxl),
-                  ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cardColor,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 56),
-                    ),
-                    child: Text(widget.cardToEdit != null
-                        ? loc.saveChanges
-                        : loc.addCard),
-                  ),
                 ],
               ),
             ),
@@ -376,10 +405,143 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
     );
   }
 
-  Widget _sectionLabel(BuildContext context, String text) {
+  Widget _sectionLabel(BuildContext context, String text, {String? optional}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: 2),
-      child: Text(text, style: context.text.titleSmall),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(text, style: context.text.titleSmall),
+          if (optional != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Text('· $optional',
+                style: context.text.bodySmall
+                    ?.copyWith(color: context.palette.inkFaint)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Barcode: scan-or-type chooser, then a captured/editable state ────────────
+  Widget _codeSection(BuildContext context, AppLocalizations loc, AppPalette p,
+      Color cardColor) {
+    // Nothing captured yet and not typing → offer the two clear paths.
+    if (!_hasCode && !_manualEntry) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ScanTile(
+            label: loc.scanBarcode,
+            color: cardColor,
+            onTap: _startScanning,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            child: TextButton.icon(
+              onPressed: () => setState(() => _manualEntry = true),
+              icon: const Icon(Icons.keyboard_rounded, size: 18),
+              label: Text(loc.enterManually),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Captured or typing → show the value, a rescan action and advanced options.
+    return Container(
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: p.hairline),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_hasCode && _barcodeError == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_rounded, size: 18, color: cardColor),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(loc.codeCaptured,
+                      style: context.text.labelMedium
+                          ?.copyWith(color: cardColor)),
+                ],
+              ),
+            ),
+          TextFormField(
+            controller: _barcodeController,
+            decoration: InputDecoration(
+              hintText: loc.barcode,
+              errorText: _barcodeError,
+              prefixIcon: const Icon(Icons.tag_rounded),
+            ),
+            style: context.text.bodyLarge?.copyWith(letterSpacing: 1),
+            onChanged: (value) => setState(() {
+              _barcode = value;
+              _validateCurrentBarcode();
+            }),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _startScanning,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: cardColor,
+                    side: BorderSide(color: cardColor.withOpacity(0.5)),
+                    minimumSize: const Size(0, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md)),
+                  ),
+                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                  label: Text(loc.rescan),
+                ),
+              ),
+            ],
+          ),
+          // Advanced: barcode type (auto-detected on scan; editable if needed).
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _showAdvanced = !_showAdvanced),
+              style: TextButton.styleFrom(foregroundColor: p.inkSoft),
+              icon: Icon(
+                  _showAdvanced
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  size: 18),
+              label: Text(loc.advancedOptions),
+            ),
+          ),
+          if (_showAdvanced)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: DropdownButtonFormField<String>(
+                value: _barcodeType,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: loc.type),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                items: _barcodeTypes
+                    .map((type) => DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type.toUpperCase()),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() {
+                  _barcodeType = value;
+                  _validateCurrentBarcode();
+                }),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -394,7 +556,6 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
             selected: _selectedColorValue == color.value,
             onTap: () => setState(() => _selectedColorValue = color.value),
           ),
-        // Custom colour.
         GestureDetector(
           onTap: _pickCustomColor,
           child: Container(
@@ -474,62 +635,43 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
       setState(() => _selectedColorValue = result.value);
     }
   }
+}
 
-  Widget _barcodeSection(BuildContext context, AppLocalizations loc,
-      AppPalette p, Color cardColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: p.surface,
+/// Big, obvious "scan" call-to-action used when no code has been captured yet.
+class _ScanTile extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ScanTile(
+      {required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: p.hairline),
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ElevatedButton.icon(
-            onPressed: _startScanning,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cardColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 52),
-            ),
-            icon: const Icon(Icons.qr_code_scanner_rounded),
-            label:
-                Text(_barcode == null ? loc.scan : loc.rescan),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          TextFormField(
-            controller: _barcodeController,
-            decoration: InputDecoration(
-              hintText: loc.barcode,
-              errorText: _barcodeError,
-              suffixIcon: IconButton(
-                icon: Icon(Icons.check_rounded, color: p.accent),
-                onPressed: () =>
-                    setState(() => _barcode = _barcodeController.text),
-              ),
-            ),
-            onChanged: (value) => setState(() => _barcode = value),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          DropdownButtonFormField<String>(
-            value: _barcodeType,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: loc.type),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.xxl),
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            items: _barcodeTypes
-                .map((type) => DropdownMenuItem<String>(
-                      value: type,
-                      child: Text(type.toUpperCase()),
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() {
-              _barcodeType = value;
-              _validateCurrentBarcode();
-            }),
+            border: Border.all(color: color.withOpacity(0.4), width: 1.5),
           ),
-        ],
+          child: Column(
+            children: [
+              Icon(Icons.qr_code_scanner_rounded, size: 34, color: color),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: context.text.titleMedium?.copyWith(color: color),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

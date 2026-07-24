@@ -211,4 +211,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinnedToWidget => 'Card set as widget';
+
+  @override
+  String get scanBarcode => 'Scan the barcode';
+
+  @override
+  String get enterManually => 'Enter manually';
+
+  @override
+  String get advancedOptions => 'Advanced options';
+
+  @override
+  String get codeCaptured => 'Code captured';
+
+  @override
+  String get nameRequired => 'Please enter a name';
+
+  @override
+  String get optional => 'optional';
 }

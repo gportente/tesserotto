@@ -80,5 +80,11 @@
   "removeFromFavorites": "Rimuovi dai preferiti",
   "deleteCardAction": "Elimina tessera",
   "pinToWidget": "Imposta come widget",
-  "pinnedToWidget": "Tessera impostata come widget"
+  "pinnedToWidget": "Tessera impostata come widget",
+  "scanBarcode": "Scansiona il codice a barre",
+  "enterManually": "Inserisci manualmente",
+  "advancedOptions": "Opzioni avanzate",
+  "codeCaptured": "Codice acquisito",
+  "nameRequired": "Inserisci un nome",
+  "optional": "facoltativo"
 } 

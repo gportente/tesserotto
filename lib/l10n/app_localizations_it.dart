@@ -211,4 +211,22 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get pinnedToWidget => 'Tessera impostata come widget';
+
+  @override
+  String get scanBarcode => 'Scansiona il codice a barre';
+
+  @override
+  String get enterManually => 'Inserisci manualmente';
+
+  @override
+  String get advancedOptions => 'Opzioni avanzate';
+
+  @override
+  String get codeCaptured => 'Codice acquisito';
+
+  @override
+  String get nameRequired => 'Inserisci un nome';
+
+  @override
+  String get optional => 'facoltativo';
 }
