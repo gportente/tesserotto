@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../widgets/card_gradient_header.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:barcode/barcode.dart' as bc;
+import 'package:file_picker/file_picker.dart';
 
 class AddCardScreen extends ConsumerStatefulWidget {
   final FidelityCard? cardToEdit;
@@ -184,6 +185,37 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   }
 
   void _stopScanning() => setState(() => _isScanning = false);
+
+  /// Decode a barcode from a picture in the gallery (e.g. a card received
+  /// as a screenshot in a chat) instead of the live camera.
+  Future<void> _scanFromImage() async {
+    final loc = AppLocalizations.of(context)!;
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final path = result?.files.single.path;
+    if (path == null) return;
+
+    final controller = MobileScannerController();
+    try {
+      final capture = await controller.analyzeImage(path);
+      final barcodes = capture?.barcodes ?? [];
+      if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+        final b = barcodes.first;
+        setState(() {
+          _barcode = b.rawValue;
+          _barcodeType = mapBarcodeFormatToType(b.format);
+          _barcodeController.text = b.rawValue!;
+          _manualEntry = true;
+          _validateCurrentBarcode();
+        });
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.noCodeFound)),
+        );
+      }
+    } finally {
+      await controller.dispose();
+    }
+  }
 
   String mapBarcodeFormatToType(BarcodeFormat format) {
     switch (format) {
@@ -437,13 +469,22 @@ class _AddCardScreenState extends ConsumerState<AddCardScreen> {
             color: cardColor,
             onTap: _startScanning,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Align(
-            child: TextButton.icon(
-              onPressed: () => setState(() => _manualEntry = true),
-              icon: const Icon(Icons.keyboard_rounded, size: 18),
-              label: Text(loc.enterManually),
-            ),
+          const SizedBox(height: AppSpacing.xs),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.sm,
+            children: [
+              TextButton.icon(
+                onPressed: () => setState(() => _manualEntry = true),
+                icon: const Icon(Icons.keyboard_rounded, size: 18),
+                label: Text(loc.enterManually),
+              ),
+              TextButton.icon(
+                onPressed: _scanFromImage,
+                icon: const Icon(Icons.image_outlined, size: 18),
+                label: Text(loc.fromImage),
+              ),
+            ],
           ),
         ],
       );

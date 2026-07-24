@@ -242,7 +242,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteCardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete Cardx2'**
+  /// **'Delete Card'**
   String get deleteCardTitle;
 
   /// No description provided for @deleteCardMessage.
@@ -592,6 +592,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copied to clipboard'**
   String get copied;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @cardDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Card deleted'**
+  String get cardDeleted;
+
+  /// No description provided for @fromImage.
+  ///
+  /// In en, this message translates to:
+  /// **'From image'**
+  String get fromImage;
+
+  /// No description provided for @noCodeFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No code found in the image'**
+  String get noCodeFound;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

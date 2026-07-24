@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
-  String get deleteCardTitle => 'Delete Cardx2';
+  String get deleteCardTitle => 'Delete Card';
 
   @override
   String deleteCardMessage(Object cardName) {
@@ -262,4 +262,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copied => 'Copied to clipboard';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get cardDeleted => 'Card deleted';
+
+  @override
+  String get fromImage => 'From image';
+
+  @override
+  String get noCodeFound => 'No code found in the image';
 }

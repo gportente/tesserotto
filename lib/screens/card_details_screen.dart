@@ -1,5 +1,6 @@
 import 'package:fidelity_cards_manager/screens/add_card_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/card_gradient_header.dart';
@@ -11,7 +12,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../providers/settings_provider.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/delete_card_dialog.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/deep_link_service.dart';
@@ -303,6 +303,7 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
             onSelected: (value) async {
               switch (value) {
                 case 'favorite':
+                  HapticFeedback.selectionClick();
                   ref
                       .read(fidelityCardsProvider.notifier)
                       .toggleFavorite(card.id);
@@ -316,19 +317,25 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                     );
                   }
                 case 'delete':
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => DeleteCardDialog(
-                      cardName: card.name,
-                      loc: AppLocalizations.of(context)!,
+                  final deleted = card;
+                  final messenger = ScaffoldMessenger.of(context);
+                  HapticFeedback.mediumImpact();
+                  ref
+                      .read(fidelityCardsProvider.notifier)
+                      .removeCard(deleted.id);
+                  if (mounted) Navigator.pop(context);
+                  messenger.clearSnackBars();
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(loc.cardDeleted),
+                      action: SnackBarAction(
+                        label: loc.undo,
+                        onPressed: () => ref
+                            .read(fidelityCardsProvider.notifier)
+                            .addCard(deleted),
+                      ),
                     ),
                   );
-                  if (confirm == true) {
-                    ref
-                        .read(fidelityCardsProvider.notifier)
-                        .removeCard(card.id);
-                    if (mounted) Navigator.pop(context);
-                  }
               }
             },
             itemBuilder: (context) => [

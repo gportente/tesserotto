@@ -23,7 +23,7 @@
   "sortAZ": "A-Z",
   "sortMostOpened": "Most Opened",
   "language": "Language",
-  "deleteCardTitle": "Delete Cardx2",
+  "deleteCardTitle": "Delete Card",
   "deleteCardMessage": "Are you sure you want to delete \"{cardName}\"?",
   "deleteCardCancel": "Cancel",
   "deleteCardConfirm": "Delete",
@@ -96,5 +96,9 @@
   "version": "Version",
   "licenses": "Open source licenses",
   "sourceCode": "Source code",
-  "copied": "Copied to clipboard"
+  "copied": "Copied to clipboard",
+  "undo": "Undo",
+  "cardDeleted": "Card deleted",
+  "fromImage": "From image",
+  "noCodeFound": "No code found in the image"
 } 

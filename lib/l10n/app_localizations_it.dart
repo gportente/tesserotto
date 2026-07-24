@@ -262,4 +262,16 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get copied => 'Copiato negli appunti';
+
+  @override
+  String get undo => 'Annulla';
+
+  @override
+  String get cardDeleted => 'Tessera eliminata';
+
+  @override
+  String get fromImage => 'Da immagine';
+
+  @override
+  String get noCodeFound => 'Nessun codice trovato nell\'immagine';
 }

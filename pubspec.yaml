@@ -73,6 +73,19 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.0
+
+# Soft & Warm launch splash — cream in light, warm charcoal in dark.
+# Regenerate with: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FAF6F0"
+  color_dark: "#17140F"
+  android_12:
+    color: "#FAF6F0"
+    color_dark: "#17140F"
+  android: true
+  ios: true
+  web: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

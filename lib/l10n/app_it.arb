@@ -97,5 +97,9 @@
   "version": "Versione",
   "licenses": "Licenze open source",
   "sourceCode": "Codice sorgente",
-  "copied": "Copiato negli appunti"
+  "copied": "Copiato negli appunti",
+  "undo": "Annulla",
+  "cardDeleted": "Tessera eliminata",
+  "fromImage": "Da immagine",
+  "noCodeFound": "Nessun codice trovato nell'immagine"
 } 

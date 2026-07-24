@@ -1,5 +1,6 @@
 import 'package:fidelity_cards_manager/screens/import_export_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/fidelity_card.dart';
@@ -10,7 +11,6 @@ import 'add_card_screen.dart';
 import 'card_details_screen.dart';
 import 'settings_screen.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/delete_card_dialog.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../providers/settings_provider.dart';
@@ -102,6 +102,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ? Color(card.colorValue!)
                           : cardColorFromName(card.name);
                       return AnimatedCard(
+                        key: ValueKey(card.id),
+                        index: index,
                         card: card,
                         cardColor: cardColor,
                         onTap: () async {
@@ -309,6 +311,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// Optimistic delete with an Undo affordance — no confirmation dialog.
+  void _deleteWithUndo(FidelityCard card, AppLocalizations loc) {
+    HapticFeedback.mediumImpact();
+    ref.read(fidelityCardsProvider.notifier).removeCard(card.id);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(loc.cardDeleted),
+        action: SnackBarAction(
+          label: loc.undo,
+          onPressed: () =>
+              ref.read(fidelityCardsProvider.notifier).addCard(card),
+        ),
+      ),
+    );
+  }
+
   Future<void> _showCardActions(
       BuildContext context, FidelityCard card, AppLocalizations loc) async {
     final p = context.palette;
@@ -348,6 +368,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   : loc.addToFavorites),
               onTap: () {
                 Navigator.pop(ctx);
+                HapticFeedback.selectionClick();
                 ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
               },
             ),
@@ -368,20 +389,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               leading: Icon(Icons.delete_outline_rounded, color: p.danger),
               title: Text(loc.deleteCardAction,
                   style: TextStyle(color: p.danger)),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(ctx);
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => DeleteCardDialog(
-                    cardName: card.name,
-                    loc: AppLocalizations.of(context)!,
-                  ),
-                );
-                if (confirm == true) {
-                  ref
-                      .read(fidelityCardsProvider.notifier)
-                      .removeCard(card.id);
-                }
+                _deleteWithUndo(card, loc);
               },
             ),
             const SizedBox(height: AppSpacing.sm),

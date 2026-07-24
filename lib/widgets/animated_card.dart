@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/fidelity_card.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
 /// A loyalty-card tile: soft gradient, monogram watermark, name anchored
-/// bottom-left like a real wallet card. Enters with a calm fade+scale (no
-/// bounce) and gives tactile press feedback.
+/// bottom-left like a real wallet card. Enters with a calm, staggered
+/// fade+scale (no bounce) and gives tactile press feedback.
 class AnimatedCard extends StatefulWidget {
   final FidelityCard card;
   final Color cardColor;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final int index;
 
   const AnimatedCard({
     super.key,
@@ -18,6 +20,7 @@ class AnimatedCard extends StatefulWidget {
     required this.cardColor,
     required this.onTap,
     required this.onLongPress,
+    this.index = 0,
   });
 
   @override
@@ -41,7 +44,11 @@ class _AnimatedCardState extends State<AnimatedCard>
     _scale = Tween<double>(begin: 0.96, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: AppCurves.out));
     _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _controller.forward();
+    // Subtle cascade: each card starts a touch after the previous one.
+    final delay = Duration(milliseconds: (widget.index * 45).clamp(0, 360));
+    Future.delayed(delay, () {
+      if (mounted) _controller.forward();
+    });
   }
 
   @override
@@ -63,8 +70,14 @@ class _AnimatedCardState extends State<AnimatedCard>
       child: ScaleTransition(
         scale: _scale,
         child: GestureDetector(
-          onTap: widget.onTap,
-          onLongPress: widget.onLongPress,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            widget.onTap();
+          },
+          onLongPress: () {
+            HapticFeedback.mediumImpact();
+            widget.onLongPress();
+          },
           onTapDown: (_) => setState(() => _pressed = true),
           onTapUp: (_) => setState(() => _pressed = false),
           onTapCancel: () => setState(() => _pressed = false),
