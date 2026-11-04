@@ -7,7 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/fidelity_card.dart';
 
 class DeepLinkService {
-  static const String webHost = 'app.auxrideum.ddns.ms';
+  static const String webHost = 'app.gabrieleportente.it';
+
+  // Domini usati in passato: i link già condivisi restano importabili.
+  static const Set<String> legacyHosts = {'app.auxrideum.ddns.ms'};
+
+  static bool _isCardLink(Uri uri) =>
+      uri.scheme == 'https' &&
+      (uri.host == webHost || legacyHosts.contains(uri.host));
 
   static const _barcodeTypeToEnum = {
     'ean13': 0, 'upcA': 1, 'code128': 2, 'qrCode': 3, 'ean8': 4, 'code39': 5,
@@ -45,7 +52,7 @@ class DeepLinkService {
 
   // Metodo per gestire il Deep Link ricevuto
   static void _handleDeepLink(Uri uri, WidgetRef ref) {
-    if (uri.scheme == 'https' && uri.host == webHost) {
+    if (_isCardLink(uri)) {
       ref.read(deepLinkProvider.notifier).state = uri.toString();
     }
   }
@@ -140,7 +147,7 @@ class DeepLinkService {
   static FidelityCard? decodeDeepLink(String deepLink) {
     try {
       final uri = Uri.parse(deepLink);
-      if (uri.scheme == 'https' && uri.host == webHost) {
+      if (_isCardLink(uri)) {
         final raw = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
         final normalized = base64Url.normalize(raw.replaceAll('+', '-').replaceAll('/', '_'));
         final bytes = base64Url.decode(normalized);

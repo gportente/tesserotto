@@ -22,6 +22,15 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="app.gabrieleportente.it" android:pathPrefix="/import" />
+            </intent-filter>
+            <!-- Dominio precedente, per i link già condivisi. Niente autoVerify: il dominio
+                 non è più raggiungibile e su Android 11 e precedenti una verifica fallita
+                 annullerebbe anche quella del dominio attuale. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="app.auxrideum.ddns.ms" android:pathPrefix="/import" />
             </intent-filter>
         </activity>
