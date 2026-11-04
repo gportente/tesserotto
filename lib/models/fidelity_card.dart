@@ -7,6 +7,7 @@ class FidelityCard {
   final int? colorValue;
   final int openCount;
   final bool isFavorite;
+  final int orderIndex;
   final DateTime createdAt;
 
   FidelityCard({
@@ -18,6 +19,7 @@ class FidelityCard {
     this.colorValue,
     this.openCount = 0,
     this.isFavorite = false,
+    this.orderIndex = 0,
     required this.createdAt,
   });
 
@@ -30,6 +32,7 @@ class FidelityCard {
     int? colorValue,
     int? openCount,
     bool? isFavorite,
+    int? orderIndex,
     DateTime? createdAt,
   }) {
     return FidelityCard(
@@ -41,6 +44,7 @@ class FidelityCard {
       colorValue: colorValue ?? this.colorValue,
       openCount: openCount ?? this.openCount,
       isFavorite: isFavorite ?? this.isFavorite,
+      orderIndex: orderIndex ?? this.orderIndex,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -54,6 +58,7 @@ class FidelityCard {
         'colorValue': colorValue,
         'openCount': openCount,
         'isFavorite': isFavorite ? 1 : 0,
+        'orderIndex': orderIndex,
         'createdAt': createdAt.toIso8601String(),
       };
 
@@ -66,6 +71,7 @@ class FidelityCard {
         colorValue: json['colorValue'] as int?,
         openCount: json['openCount'] as int? ?? 0,
         isFavorite: (json['isFavorite'] as int? ?? 0) == 1,
+        orderIndex: json['orderIndex'] as int? ?? 0,
         createdAt: DateTime.parse(json['createdAt'] as String? ?? json['created_at'] as String),
       );
-} 
+}

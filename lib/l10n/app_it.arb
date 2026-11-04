@@ -22,6 +22,8 @@
   "delete": "Elimina",
   "sortAZ": "A-Z",
   "sortMostOpened": "Più Aperte",
+  "sortCustom": "Personalizzato",
+  "reorderHint": "Tieni premuto e trascina per riordinare",
   "language": "Lingua",
   "deleteCardTitle": "Elimina Tessera",
   "deleteCardMessage": "Sei sicuro di voler eliminare \"{cardName}\"?",

@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:fidelity_cards_manager/screens/import_export_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:home_widget/home_widget.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '../main.dart';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../widgets/animated_card.dart';
@@ -14,7 +18,6 @@ import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../providers/settings_provider.dart';
-import '../services/home_widget_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,13 +28,65 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _search = '';
+  StreamSubscription<Uri?>? _widgetClickSub;
+  String? _pendingWidgetCardId;
+
+  @override
+  void initState() {
+    super.initState();
+    // App launched cold by tapping a card in the widget.
+    HomeWidget.initiallyLaunchedFromHomeWidget().then(_onWidgetLaunch);
+    // App already running when a widget card is tapped.
+    _widgetClickSub = HomeWidget.widgetClicked.listen(_onWidgetLaunch);
+  }
+
+  @override
+  void dispose() {
+    _widgetClickSub?.cancel();
+    super.dispose();
+  }
+
+  /// Parses a `tesserotto://card?id=<id>` launch URI coming from the widget.
+  void _onWidgetLaunch(Uri? uri) {
+    if (uri == null || uri.host != 'card') return;
+    final id = uri.queryParameters['id'];
+    if (id == null || id.isEmpty) return;
+    _pendingWidgetCardId = id;
+    _openPendingWidgetCard();
+  }
+
+  /// Opens the pending widget card once it's available in the provider.
+  /// On a cold start the card list may still be loading, so this is retried
+  /// from [build] via `ref.listen` whenever the list changes.
+  void _openPendingWidgetCard() {
+    final id = _pendingWidgetCardId;
+    if (id == null) return;
+    final cards = ref.read(fidelityCardsProvider);
+    final match = cards.where((c) => c.id == id);
+    if (match.isEmpty) return; // not loaded yet — retry on next change
+    _pendingWidgetCardId = null;
+    final card = match.first;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final nav = navigatorKey.currentState;
+      if (nav == null) return;
+      ref.read(fidelityCardsProvider.notifier).incrementOpenCount(card.id);
+      nav.push(PageTransition(page: CardDetailsScreen(card: card)));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final loc = AppLocalizations.of(context)!;
     final cards = ref.watch(fidelityCardsProvider);
+
+    // Retry opening a widget-launched card once the list finishes loading.
+    ref.listen(fidelityCardsProvider, (_, __) {
+      if (_pendingWidgetCardId != null) _openPendingWidgetCard();
+    });
     final sort = ref.watch(settingsProvider).defaultSort;
+
+    final isCustom = sort == 'custom';
 
     List<FidelityCard> filteredCards = (_search.isEmpty
             ? cards
@@ -42,16 +97,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }))
         .whereType<FidelityCard>()
         .toList();
-    filteredCards.sort((a, b) {
-      if (a.isFavorite && !b.isFavorite) return -1;
-      if (!a.isFavorite && b.isFavorite) return 1;
-      if (sort == 'name') {
-        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-      }
-      return b.openCount.compareTo(a.openCount);
-    });
+    // Custom order keeps the stored (orderIndex) sequence untouched; the other
+    // modes sort a copy with favorites pinned first.
+    if (!isCustom) {
+      filteredCards.sort((a, b) {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        if (sort == 'name') {
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        }
+        return b.openCount.compareTo(a.openCount);
+      });
+    }
 
     final isSearching = cards.isNotEmpty;
+    final canReorder = isCustom && _search.isEmpty && filteredCards.length > 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -80,46 +140,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
+          if (canReorder)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+              child: Row(
+                children: [
+                  Icon(Icons.drag_indicator_rounded,
+                      size: 16, color: p.inkFaint),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      loc.reorderHint,
+                      style: context.text.bodySmall?.copyWith(color: p.inkSoft),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: filteredCards.isEmpty
                 ? (_search.isEmpty
                     ? _emptyState(context, loc, p)
                     : _noResults(loc, p))
-                : GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
-                        AppSpacing.xs, AppSpacing.lg, 100),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: AppSpacing.md,
-                      mainAxisSpacing: AppSpacing.md,
-                      childAspectRatio: 1.42,
-                    ),
-                    itemCount: filteredCards.length,
-                    itemBuilder: (context, index) {
-                      final card = filteredCards[index];
-                      final cardColor = card.colorValue != null
-                          ? Color(card.colorValue!)
-                          : cardColorFromName(card.name);
-                      return AnimatedCard(
-                        key: ValueKey(card.id),
-                        index: index,
-                        card: card,
-                        cardColor: cardColor,
-                        onTap: () async {
-                          await ref
+                : canReorder
+                    ? ReorderableGridView.builder(
+                        padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
+                            AppSpacing.xs, AppSpacing.lg, 100),
+                        gridDelegate: _gridDelegate,
+                        itemCount: filteredCards.length,
+                        // Drag proxy: no opaque rectangle behind the rounded
+                        // card (the default Material would show white corners).
+                        dragWidgetBuilderV2: DragWidgetBuilderV2(
+                          builder: (index, child, screenshot) => Material(
+                            type: MaterialType.transparency,
+                            child: child,
+                          ),
+                        ),
+                        onReorder: (oldIndex, newIndex) {
+                          HapticFeedback.mediumImpact();
+                          ref
                               .read(fidelityCardsProvider.notifier)
-                              .incrementOpenCount(card.id);
-                          if (!context.mounted) return;
-                          Navigator.push(
-                            context,
-                            PageTransition(page: CardDetailsScreen(card: card)),
-                          );
+                              .reorder(oldIndex, newIndex);
                         },
-                        onLongPress: () => _showCardActions(context, card, loc),
-                      );
-                    },
-                  ),
+                        itemBuilder: (context, index) => _cardTile(
+                            context, loc, filteredCards[index], index,
+                            reorderMode: true),
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
+                            AppSpacing.xs, AppSpacing.lg, 100),
+                        gridDelegate: _gridDelegate,
+                        itemCount: filteredCards.length,
+                        itemBuilder: (context, index) => _cardTile(
+                            context, loc, filteredCards[index], index,
+                            reorderMode: false),
+                      ),
           ),
         ],
       ),
@@ -131,6 +207,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         icon: const Icon(Icons.add_rounded),
         label: Text(loc.addCard),
       ),
+    );
+  }
+
+  static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+    crossAxisSpacing: AppSpacing.md,
+    mainAxisSpacing: AppSpacing.md,
+    childAspectRatio: 1.42,
+  );
+
+  /// A single card tile. In [reorderMode] the long-press handler is dropped so
+  /// the reorderable grid can use the long-press to start a drag.
+  Widget _cardTile(BuildContext context, AppLocalizations loc,
+      FidelityCard card, int index,
+      {required bool reorderMode}) {
+    final cardColor = card.colorValue != null
+        ? Color(card.colorValue!)
+        : cardColorFromName(card.name);
+    return AnimatedCard(
+      key: ValueKey(card.id),
+      index: index,
+      card: card,
+      cardColor: cardColor,
+      animate: !reorderMode,
+      onTap: () async {
+        await ref.read(fidelityCardsProvider.notifier).incrementOpenCount(card.id);
+        if (!context.mounted) return;
+        Navigator.push(
+          context,
+          PageTransition(page: CardDetailsScreen(card: card)),
+        );
+      },
+      onLongPress: reorderMode ? null : () => _showCardActions(context, card, loc),
     );
   }
 
@@ -184,12 +293,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           CheckedPopupMenuItem(
             value: 'name',
             checked: sort == 'name',
-            child: Text(loc.sortAZ),
+            child: Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.lg),
+              child: Text(loc.sortAZ),
+            ),
           ),
           CheckedPopupMenuItem(
             value: 'openCount',
             checked: sort == 'openCount',
-            child: Text(loc.sortMostOpened),
+            child: Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.lg),
+              child: Text(loc.sortMostOpened),
+            ),
+          ),
+          CheckedPopupMenuItem(
+            value: 'custom',
+            checked: sort == 'custom',
+            child: Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.lg),
+              child: Text(loc.sortCustom),
+            ),
           ),
         ],
       ),
@@ -213,15 +336,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               loc.noCards,
               style: context.text.headlineSmall,
               textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                PageTransition(page: const AddCardScreen()),
-              ),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(loc.addCard),
             ),
           ],
         ),
@@ -370,19 +484,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.pop(ctx);
                 HapticFeedback.selectionClick();
                 ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.widgets_outlined, color: p.inkSoft),
-              title: Text(loc.pinToWidget),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await HomeWidgetService.pinCard(card);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.pinnedToWidget)),
-                  );
-                }
               },
             ),
             ListTile(

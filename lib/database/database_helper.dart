@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -37,6 +37,7 @@ class DatabaseHelper {
         colorValue INTEGER,
         openCount INTEGER,
         isFavorite INTEGER NOT NULL DEFAULT 0,
+        orderIndex INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL
       )
     ''');
@@ -47,6 +48,18 @@ class DatabaseHelper {
     final hasIsFavorite = columns.any((col) => col['name'] == 'isFavorite');
     if (!hasIsFavorite) {
       await db.execute('ALTER TABLE fidelity_cards ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0;');
+    }
+
+    final hasOrderIndex = columns.any((col) => col['name'] == 'orderIndex');
+    if (!hasOrderIndex) {
+      await db.execute('ALTER TABLE fidelity_cards ADD COLUMN orderIndex INTEGER NOT NULL DEFAULT 0;');
+      // Seed a sensible custom order from the current chronological order so
+      // the first "custom" view matches what the user already sees.
+      final rows = await db.query('fidelity_cards', orderBy: 'created_at ASC');
+      for (var i = 0; i < rows.length; i++) {
+        await db.update('fidelity_cards', {'orderIndex': i},
+            where: 'id = ?', whereArgs: [rows[i]['id']]);
+      }
     }
   }
 
@@ -63,6 +76,7 @@ class DatabaseHelper {
         'colorValue': card.colorValue,
         'openCount': card.openCount,
         'isFavorite': card.isFavorite ? 1 : 0,
+        'orderIndex': card.orderIndex,
         'created_at': card.createdAt.toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -71,7 +85,9 @@ class DatabaseHelper {
 
   Future<List<FidelityCard>> getAllCards() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('fidelity_cards');
+    // Custom order is the canonical storage order; created_at breaks ties.
+    final List<Map<String, dynamic>> maps =
+        await db.query('fidelity_cards', orderBy: 'orderIndex ASC, created_at ASC');
 
     return List.generate(maps.length, (i) {
       return FidelityCard(
@@ -83,6 +99,7 @@ class DatabaseHelper {
         colorValue: maps[i]['colorValue'],
         openCount: maps[i]['openCount'] ?? 0,
         isFavorite: (maps[i]['isFavorite'] as int? ?? 0) == 1,
+        orderIndex: maps[i]['orderIndex'] as int? ?? 0,
         createdAt: DateTime.parse(maps[i]['created_at']),
       );
     });
@@ -100,6 +117,7 @@ class DatabaseHelper {
         'colorValue': card.colorValue,
         'openCount': card.openCount,
         'isFavorite': card.isFavorite ? 1 : 0,
+        'orderIndex': card.orderIndex,
       },
       where: 'id = ?',
       whereArgs: [card.id],

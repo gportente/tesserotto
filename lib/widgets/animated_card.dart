@@ -11,16 +11,22 @@ class AnimatedCard extends StatefulWidget {
   final FidelityCard card;
   final Color cardColor;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  /// When null (e.g. in reorder mode) no long-press handler is attached, so a
+  /// parent reorderable grid can claim the long-press to start a drag.
+  final VoidCallback? onLongPress;
   final int index;
+  /// Plays the staggered fade+scale intro. Disabled in reorder mode so a card
+  /// re-created after a drag drop doesn't flash by replaying the intro.
+  final bool animate;
 
   const AnimatedCard({
     super.key,
     required this.card,
     required this.cardColor,
     required this.onTap,
-    required this.onLongPress,
+    this.onLongPress,
     this.index = 0,
+    this.animate = true,
   });
 
   @override
@@ -44,11 +50,16 @@ class _AnimatedCardState extends State<AnimatedCard>
     _scale = Tween<double>(begin: 0.96, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: AppCurves.out));
     _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    // Subtle cascade: each card starts a touch after the previous one.
-    final delay = Duration(milliseconds: (widget.index * 45).clamp(0, 360));
-    Future.delayed(delay, () {
-      if (mounted) _controller.forward();
-    });
+    if (!widget.animate) {
+      // Show at rest immediately — no intro, no flash on re-create.
+      _controller.value = 1.0;
+    } else {
+      // Subtle cascade: each card starts a touch after the previous one.
+      final delay = Duration(milliseconds: (widget.index * 45).clamp(0, 360));
+      Future.delayed(delay, () {
+        if (mounted) _controller.forward();
+      });
+    }
   }
 
   @override
@@ -74,10 +85,12 @@ class _AnimatedCardState extends State<AnimatedCard>
             HapticFeedback.selectionClick();
             widget.onTap();
           },
-          onLongPress: () {
-            HapticFeedback.mediumImpact();
-            widget.onLongPress();
-          },
+          onLongPress: widget.onLongPress == null
+              ? null
+              : () {
+                  HapticFeedback.mediumImpact();
+                  widget.onLongPress!();
+                },
           onTapDown: (_) => setState(() => _pressed = true),
           onTapUp: (_) => setState(() => _pressed = false),
           onTapCancel: () => setState(() => _pressed = false),

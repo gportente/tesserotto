@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/fidelity_card.dart';
@@ -29,7 +30,7 @@ class DeepLinkService {
       appLinks.uriLinkStream.listen((Uri uri) {
         _handleDeepLink(uri, ref);
       }, onError: (err) {
-        print('Error handling deep links: $err');
+        debugPrint('Error handling deep links: $err');
       });
 
       // Gestione dei Deep Links quando l'app è in foreground
@@ -38,7 +39,7 @@ class DeepLinkService {
         _handleDeepLink(initialUri, ref);
       }
     } on PlatformException catch (e) {
-      print('Failed to initialize deep links: $e');
+      debugPrint('Failed to initialize deep links: $e');
     }
   }
 
@@ -162,7 +163,7 @@ class DeepLinkService {
         }
       }
     } catch (e) {
-      print('Error decoding deep link: $e');
+      debugPrint('Error decoding deep link: $e');
     }
     return null;
   }
