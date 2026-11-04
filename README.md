@@ -13,7 +13,7 @@
 [![State](https://img.shields.io/badge/state-Riverpod-5C6BC0?style=flat-square)](https://riverpod.dev)
 [![Storage](https://img.shields.io/badge/storage-SQLite%20on--device-2F7A8A?style=flat-square&logo=sqlite&logoColor=white)](#persistenza)
 
-[Funzionalità](#funzionalità) · [Screenshot](#screenshot) · [Architettura](#architettura) · [Per iniziare](#per-iniziare) · [Build e rilascio](#build-e-rilascio) · [Privacy](#sicurezza-e-privacy)
+[Sito](https://app.gabrieleportente.it) · [Funzionalità](#funzionalità) · [Screenshot](#screenshot) · [Architettura](#architettura) · [Per iniziare](#per-iniziare) · [Build e rilascio](#build-e-rilascio) · [Privacy](#sicurezza-e-privacy)
 
 </div>
 
@@ -61,7 +61,7 @@ I principi del progetto:
 - **Vista cassa**: codice a barre o QR ad alto contrasto anche in tema scuro, luminosità portata al massimo all'apertura e ripristinata all'uscita (disattivabile).
 
 ### Condivisione e interoperabilità
-- **Link di importazione** (`https://app.auxrideum.ddns.ms/import/…`) gestiti come Android App Links: chi riceve il link apre direttamente la schermata di importazione.
+- **Link di importazione** (`https://app.gabrieleportente.it/import/…`) gestiti come Android App Links: chi riceve il link apre direttamente la schermata di importazione. Senza l'app installata, il link apre la pagina del [sito](https://app.gabrieleportente.it) con l'anteprima della tessera.
 - **Condivisione via QR**: un QR contenente il link, da inquadrare con un altro telefono.
 - **Formato compatto v1**: payload binario codificato in Base64URL ([dettagli](#formato-dei-link-di-condivisione)), con fallback JSON per i campi più lunghi.
 
@@ -144,7 +144,7 @@ flowchart TB
 | Scansione e rendering codici | `mobile_scanner`, `barcode_widget`, `qr_flutter` |
 | Cloud backup | `google_sign_in`, `googleapis` (Drive v3) |
 | Widget home | `home_widget` + `AppWidgetProvider` nativo in Kotlin |
-| Deep linking | `app_links` (Android App Links con `autoVerify`) |
+| Deep linking | `app_links` (Android App Links con `autoVerify` su `app.gabrieleportente.it`) |
 | UI | Material 3, `google_fonts`, `reorderable_grid_view`, `flutter_svg` |
 | Localizzazione | `flutter_localizations` + ARB (`gen-l10n`) |
 
@@ -175,6 +175,8 @@ Per tenere corti link e QR, la tessera viene serializzata in un formato binario 
 ```
 
 Se un campo supera i 255 byte UTF-8 si usa automaticamente il fallback JSON. Il decoder accetta entrambi i formati e anche quello legacy a chiavi brevi.
+
+L'app accetta i link di `app.gabrieleportente.it` e, per compatibilità con quelli già condivisi, del vecchio dominio `app.auxrideum.ddns.ms`. La pagina web che apre i link e il file `assetlinks.json` vivono nel repository [tesserotto-website](https://github.com/gportente/tesserotto-website): il dominio va cambiato in entrambi i repository insieme.
 
 ### Struttura del repository
 
