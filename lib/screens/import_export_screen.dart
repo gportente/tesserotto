@@ -71,6 +71,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       await _saveLastBackup();
       _snack(AppLocalizations.of(context)!.driveBackupSuccess);
     } catch (e) {
+      debugPrint('DRIVE BACKUP ERROR: $e');
       _snack(AppLocalizations.of(context)!.driveBackupError, error: true);
     } finally {
       setState(() => _isDriveLoading = false);
@@ -293,21 +294,25 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
             )
           else ...[
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.account_circle_rounded, size: 20, color: p.inkSoft),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    loc.driveSignedInAs(driveAccount.email),
+                    driveAccount.email,
                     style: context.text.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ),
-                TextButton(
-                  onPressed: _googleSignOut,
-                  child: Text(loc.driveSignOut),
-                ),
               ],
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _googleSignOut,
+                child: Text(loc.driveSignOut),
+              ),
             ),
           ],
           if (_lastBackup != null) ...[
