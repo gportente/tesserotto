@@ -1,15 +1,24 @@
 package com.gportente.tesserotto
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
-import org.json.JSONObject
+import org.json.JSONArray
 
 class TesserottoWidgetProvider : AppWidgetProvider() {
+
+    private val rowIds = intArrayOf(R.id.row_0, R.id.row_1, R.id.row_2, R.id.row_3, R.id.row_4)
+    private val dotIds = intArrayOf(R.id.dot_0, R.id.dot_1, R.id.dot_2, R.id.dot_3, R.id.dot_4)
+    private val nameIds = intArrayOf(R.id.name_0, R.id.name_1, R.id.name_2, R.id.name_3, R.id.name_4)
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -23,53 +32,63 @@ class TesserottoWidgetProvider : AppWidgetProvider() {
     private fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
         val views = RemoteViews(context.packageName, R.layout.widget_layout)
         val widgetData = HomeWidgetPlugin.getData(context)
-        val pinnedJson = widgetData.getString("pinned_card", null)
 
-        if (pinnedJson != null) {
-            try {
-                val card = JSONObject(pinnedJson)
-                val name = card.getString("name")
-                val description = card.optString("description", "")
-                val colorValue = if (card.has("colorValue") && !card.isNull("colorValue"))
-                    card.getInt("colorValue") else null
+        val cards = try {
+            val json = widgetData.getString("top_cards", null)
+            if (json != null) JSONArray(json) else JSONArray()
+        } catch (_: Exception) {
+            JSONArray()
+        }
 
-                views.setTextViewText(R.id.tv_card_name, name)
-                views.setTextViewText(R.id.tv_card_description, description)
-                views.setViewVisibility(R.id.tv_hint, android.view.View.GONE)
-                views.setViewVisibility(R.id.tv_card_description, if (description.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE)
+        val count = minOf(cards.length(), rowIds.size)
+        views.setViewVisibility(R.id.tv_empty, if (count == 0) View.VISIBLE else View.GONE)
 
-                if (colorValue != null) {
-                    val bg = android.graphics.drawable.GradientDrawable()
-                    bg.setColor(colorValue)
-                    bg.cornerRadius = 40f
-                    // RemoteViews doesn't support setBackground(Drawable) directly;
-                    // use a tinted version of our shape via setInt
-                    views.setInt(R.id.widget_root, "setBackgroundColor", colorValue)
-                }
-            } catch (_: Exception) {
-                showPlaceholder(views)
+        for (i in rowIds.indices) {
+            if (i < count) {
+                val card = cards.getJSONObject(i)
+                val id = card.optString("id", "")
+                val name = card.optString("name", "")
+                val color = if (card.has("colorValue") && !card.isNull("colorValue"))
+                    card.getInt("colorValue") else 0xFFFFFFFF.toInt()
+
+                views.setViewVisibility(rowIds[i], View.VISIBLE)
+                views.setTextViewText(nameIds[i], name)
+                views.setInt(dotIds[i], "setColorFilter", color)
+
+                // Tapping a card opens the app directly on that card.
+                views.setOnClickPendingIntent(
+                    rowIds[i],
+                    launchIntent(context, Uri.parse("tesserotto://card?id=" + Uri.encode(id)), i + 1)
+                )
+            } else {
+                views.setViewVisibility(rowIds[i], View.GONE)
             }
-        } else {
-            showPlaceholder(views)
         }
 
-        // Tap opens the app
-        val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        if (launchIntent != null) {
-            val pendingIntent = android.app.PendingIntent.getActivity(
-                context, 0, launchIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-        }
+        // Tapping the header (or the empty state) opens the app home.
+        val homeIntent = launchIntent(context, Uri.parse("tesserotto://home"), 0)
+        views.setOnClickPendingIntent(R.id.tv_title, homeIntent)
+        views.setOnClickPendingIntent(R.id.tv_empty, homeIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun showPlaceholder(views: RemoteViews) {
-        views.setTextViewText(R.id.tv_card_name, "Tesserotto")
-        views.setTextViewText(R.id.tv_card_description, "")
-        views.setViewVisibility(R.id.tv_card_description, android.view.View.GONE)
-        views.setViewVisibility(R.id.tv_hint, android.view.View.VISIBLE)
+    /// Builds a PendingIntent that launches MainActivity carrying [uri].
+    ///
+    /// We build it manually instead of using [HomeWidgetLaunchIntent.getActivity]
+    /// because that helper sets `pendingIntentBackgroundActivityStartMode` on
+    /// API 34+, which is illegal when *creating* a PendingIntent and crashes the
+    /// widget. We keep the same launch action so the home_widget plugin still
+    /// detects the tap on the Flutter side.
+    private fun launchIntent(context: Context, uri: Uri, requestCode: Int): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
+            data = uri
+        }
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+        return PendingIntent.getActivity(context, requestCode, intent, flags)
     }
 }

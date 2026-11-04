@@ -15,7 +15,6 @@ import '../l10n/app_localizations.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/deep_link_service.dart';
-import '../services/home_widget_service.dart';
 
 class CardDetailsScreen extends ConsumerStatefulWidget {
   final FidelityCard card;
@@ -309,13 +308,6 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
                       .toggleFavorite(card.id);
                 case 'qr':
                   _showQrShareSheet(context);
-                case 'widget':
-                  await HomeWidgetService.pinCard(card);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(loc.pinnedToWidget)),
-                    );
-                  }
                 case 'delete':
                   final deleted = card;
                   final messenger = ScaffoldMessenger.of(context);
@@ -351,10 +343,6 @@ class _CardDetailsScreenState extends ConsumerState<CardDetailsScreen> {
               PopupMenuItem(
                 value: 'qr',
                 child: _menuRow(Icons.qr_code_rounded, loc.shareViaQr),
-              ),
-              PopupMenuItem(
-                value: 'widget',
-                child: _menuRow(Icons.widgets_outlined, loc.pinToWidget),
               ),
               const PopupMenuDivider(),
               PopupMenuItem(

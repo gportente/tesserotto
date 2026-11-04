@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:fidelity_cards_manager/screens/import_export_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:home_widget/home_widget.dart';
+import '../main.dart';
 import '../models/fidelity_card.dart';
 import '../providers/fidelity_cards_provider.dart';
 import '../widgets/animated_card.dart';
@@ -14,7 +17,6 @@ import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../providers/settings_provider.dart';
-import '../services/home_widget_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,12 +27,62 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _search = '';
+  StreamSubscription<Uri?>? _widgetClickSub;
+  String? _pendingWidgetCardId;
+
+  @override
+  void initState() {
+    super.initState();
+    // App launched cold by tapping a card in the widget.
+    HomeWidget.initiallyLaunchedFromHomeWidget().then(_onWidgetLaunch);
+    // App already running when a widget card is tapped.
+    _widgetClickSub = HomeWidget.widgetClicked.listen(_onWidgetLaunch);
+  }
+
+  @override
+  void dispose() {
+    _widgetClickSub?.cancel();
+    super.dispose();
+  }
+
+  /// Parses a `tesserotto://card?id=<id>` launch URI coming from the widget.
+  void _onWidgetLaunch(Uri? uri) {
+    if (uri == null || uri.host != 'card') return;
+    final id = uri.queryParameters['id'];
+    if (id == null || id.isEmpty) return;
+    _pendingWidgetCardId = id;
+    _openPendingWidgetCard();
+  }
+
+  /// Opens the pending widget card once it's available in the provider.
+  /// On a cold start the card list may still be loading, so this is retried
+  /// from [build] via `ref.listen` whenever the list changes.
+  void _openPendingWidgetCard() {
+    final id = _pendingWidgetCardId;
+    if (id == null) return;
+    final cards = ref.read(fidelityCardsProvider);
+    final match = cards.where((c) => c.id == id);
+    if (match.isEmpty) return; // not loaded yet — retry on next change
+    _pendingWidgetCardId = null;
+    final card = match.first;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final nav = navigatorKey.currentState;
+      if (nav == null) return;
+      ref.read(fidelityCardsProvider.notifier).incrementOpenCount(card.id);
+      nav.push(PageTransition(page: CardDetailsScreen(card: card)));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final loc = AppLocalizations.of(context)!;
     final cards = ref.watch(fidelityCardsProvider);
+
+    // Retry opening a widget-launched card once the list finishes loading.
+    ref.listen(fidelityCardsProvider, (_, __) {
+      if (_pendingWidgetCardId != null) _openPendingWidgetCard();
+    });
     final sort = ref.watch(settingsProvider).defaultSort;
 
     List<FidelityCard> filteredCards = (_search.isEmpty
@@ -370,19 +422,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.pop(ctx);
                 HapticFeedback.selectionClick();
                 ref.read(fidelityCardsProvider.notifier).toggleFavorite(card.id);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.widgets_outlined, color: p.inkSoft),
-              title: Text(loc.pinToWidget),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await HomeWidgetService.pinCard(card);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loc.pinnedToWidget)),
-                  );
-                }
               },
             ),
             ListTile(

@@ -12,9 +12,15 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
     _loadCards();
   }
 
+  /// Pushes the current card list to the home-screen widget.
+  void _syncWidget() {
+    HomeWidgetService.syncTopCards(state);
+  }
+
   Future<void> _loadCards() async {
     final cards = await DatabaseHelper.instance.getAllCards();
     state = cards;
+    _syncWidget();
   }
 
   Future<void> addCard(FidelityCard card) async {
@@ -27,17 +33,19 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
 
     await DatabaseHelper.instance.insertCard(newCard);
     state = [...state, newCard];
+    _syncWidget();
   }
 
   Future<void> removeCard(String id) async {
     await DatabaseHelper.instance.deleteCard(id);
     state = state.where((card) => card.id != id).toList();
-    await HomeWidgetService.unpinIfDeleted(id);
+    _syncWidget();
   }
 
   Future<void> updateCard(FidelityCard updatedCard) async {
     await DatabaseHelper.instance.updateCard(updatedCard);
     state = state.map((card) => card.id == updatedCard.id ? updatedCard : card).toList();
+    _syncWidget();
   }
 
   Future<void> incrementOpenCount(String id) async {
@@ -51,13 +59,14 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
     final updated = card.copyWith(isFavorite: !card.isFavorite);
     await DatabaseHelper.instance.updateCard(updated);
     state = state.map((c) => c.id == id ? updated : c).toList();
+    _syncWidget();
   }
 
   Future<void> clearAll() async {
     final db = await DatabaseHelper.instance.database;
     await db.delete('fidelity_cards');
     state = [];
-    await HomeWidgetService.unpinCard();
+    _syncWidget();
   }
 
   Future<void> importCards(List<FidelityCard> cards) async {
@@ -67,5 +76,6 @@ class FidelityCardsNotifier extends StateNotifier<List<FidelityCard>> {
       await DatabaseHelper.instance.insertCard(card);
     }
     state = cards;
+    _syncWidget();
   }
 }
