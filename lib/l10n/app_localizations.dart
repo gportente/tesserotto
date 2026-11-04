@@ -233,6 +233,18 @@ abstract class AppLocalizations {
   /// **'Most Opened'**
   String get sortMostOpened;
 
+  /// No description provided for @sortCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get sortCustom;
+
+  /// No description provided for @reorderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press and drag to reorder'**
+  String get reorderHint;
+
   /// No description provided for @language.
   ///
   /// In en, this message translates to:

@@ -22,6 +22,8 @@
   "delete": "Delete",
   "sortAZ": "A-Z",
   "sortMostOpened": "Most Opened",
+  "sortCustom": "Custom",
+  "reorderHint": "Long-press and drag to reorder",
   "language": "Language",
   "deleteCardTitle": "Delete Card",
   "deleteCardMessage": "Are you sure you want to delete \"{cardName}\"?",

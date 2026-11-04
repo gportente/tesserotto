@@ -78,6 +78,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get sortMostOpened => 'Più Aperte';
 
   @override
+  String get sortCustom => 'Personalizzato';
+
+  @override
+  String get reorderHint => 'Tieni premuto e trascina per riordinare';
+
+  @override
   String get language => 'Lingua';
 
   @override
